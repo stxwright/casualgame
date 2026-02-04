@@ -16,7 +16,7 @@ export default function App() {
   const [initialGrid, setInitialGrid] = useState<Grid | null>(null);
   const [levelId, setLevelId] = useState(0);
   const [shuffleCount] = useState(2);
-  const [movesRemaining, setMovesRemaining] = useState(2); // Start at shuffleCount to avoid flash
+  const [movesRemaining, setMovesRemaining] = useState(2);
   const [isSolved, setIsSolved] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [lastMoveType, setLastMoveType] = useState<'row' | 'col' | null>(null);
@@ -113,7 +113,7 @@ export default function App() {
     setLastMoveType('row');
     if (checkWin(newGrid)) {
       setIsSolved(true);
-      setTimeout(() => setShowModal(true), 2500); // 2.5 second delay
+      setTimeout(() => setShowModal(true), 2500);
     }
   };
 
@@ -126,61 +126,72 @@ export default function App() {
     setLastMoveType('col');
     if (checkWin(newGrid)) {
       setIsSolved(true);
-      setTimeout(() => setShowModal(true), 2500); // 2.5 second delay
+      setTimeout(() => setShowModal(true), 2500);
     }
   };
 
-  // Only show modal if level is actually initialized to avoid start-up flash
   const canShowModal = initialGrid !== null && ((isSolved && showModal) || (!isSolved && movesRemaining === 0));
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-4 font-sans">
-      <div className="max-w-md w-full space-y-4">
-        <header className="text-center space-y-2 mb-4">
-          <h1 className="text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-cyan-400 to-blue-600">
+    <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center px-6 xs:px-8 py-4 font-sans overflow-x-hidden">
+      
+      {/* WRAPPER FOR TIGHT LAYOUT */}
+      <div className="w-full max-w-sm flex flex-col items-center gap-6">
+        
+        {/* HEADER */}
+        <header className="text-center space-y-1">
+          <h1 className="text-5xl xs:text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-cyan-400 to-blue-600">
             WORDWRAP
           </h1>
-          <p className="text-slate-400 font-medium italic">Unscramble the 4x4 square: 4 words across, 4 words down.</p>
+          <p className="text-slate-400 text-sm font-medium italic">
+            Unscramble the square: 4 words across, 4 words down.
+          </p>
         </header>
 
-        <div className="relative p-8 bg-slate-800 rounded-3xl shadow-2xl border border-slate-700">
-          {/* Column Up buttons */}
-          <div className="absolute top-0 left-8 right-8 flex justify-between px-2 -translate-y-1/2">
+        {/* BOARD AREA */}
+        <div className="relative w-full aspect-square p-6 xs:p-8 bg-slate-800 rounded-3xl shadow-2xl border border-slate-700">
+          
+          {/* Column Up buttons - Aligned with Grid */}
+          <div className="absolute top-0 left-6 xs:left-8 right-6 xs:right-8 grid grid-cols-4 gap-2 xs:gap-3 -translate-y-1/2">
             {[0, 1, 2, 3].map(i => (
-              <button 
-                key={i} 
-                onClick={() => handleShiftCol(i, -1)}
-                disabled={lastMoveType === 'col' || movesRemaining === 0 || isSolved}
-                className={`p-2 bg-slate-700 rounded-full hover:bg-cyan-500 transition-all shadow-lg group ${(lastMoveType === 'col' || movesRemaining === 0 || isSolved) ? 'opacity-20 grayscale cursor-not-allowed' : ''}`}
-              >
-                <ChevronUp size={20} className="group-active:scale-125 transition-transform" />
-              </button>
+              <div key={i} className="flex justify-center">
+                <button 
+                  onClick={() => handleShiftCol(i, -1)}
+                  disabled={lastMoveType === 'col' || movesRemaining === 0 || isSolved}
+                  className={`p-2 bg-slate-700 rounded-full hover:bg-cyan-500 transition-all shadow-lg group ${ (lastMoveType === 'col' || movesRemaining === 0 || isSolved) ? 'opacity-20 grayscale cursor-not-allowed' : ''}`}
+                >
+                  <ChevronUp size={20} className="group-active:scale-125 transition-transform" />
+                </button>
+              </div>
             ))}
           </div>
 
-          {/* Row Left buttons */}
-          <div className="absolute top-8 bottom-8 left-0 flex flex-col justify-between py-2 -translate-x-1/2">
-            {[0, 1, 2, 3].map(i => (
-              <button 
-                key={i} 
-                onClick={() => handleShiftRow(i, -1)}
-                disabled={lastMoveType === 'row' || movesRemaining === 0 || isSolved}
-                className={`p-2 bg-slate-700 rounded-full hover:bg-cyan-500 transition-all shadow-lg group ${(lastMoveType === 'row' || movesRemaining === 0 || isSolved) ? 'opacity-20 grayscale cursor-not-allowed' : ''}`}
-              >
-                <ChevronLeft size={20} className="group-active:scale-125 transition-transform" />
-              </button>
-            ))}
+          {/* Row Left buttons - Aligned with Grid */}
+          <div className="absolute top-6 xs:top-8 bottom-6 xs:bottom-8 left-0 flex flex-col justify-between py-0 -translate-x-1/2">
+            <div className="grid grid-rows-4 gap-2 xs:gap-3 h-full">
+              {[0, 1, 2, 3].map(i => (
+                <div key={i} className="flex items-center">
+                  <button 
+                    onClick={() => handleShiftRow(i, -1)}
+                    disabled={lastMoveType === 'row' || movesRemaining === 0 || isSolved}
+                    className={`p-2 bg-slate-700 rounded-full hover:bg-cyan-500 transition-all shadow-lg group ${ (lastMoveType === 'row' || movesRemaining === 0 || isSolved) ? 'opacity-20 grayscale cursor-not-allowed' : ''}`}
+                  >
+                    <ChevronLeft size={20} className="group-active:scale-125 transition-transform" />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* THE GRID */}
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-4 grid-rows-4 gap-2 xs:gap-3 h-full">
             {grid.map((row, r) => 
               row.map((char, c) => (
                 <div 
                   key={`${r}-${c}`}
                   style={{ animationDelay: isSolved ? `${(r * 4 + c) * 100}ms` : '0ms' }}
                   className={`
-                    aspect-square flex items-center justify-center text-3xl font-bold rounded-xl
+                    flex items-center justify-center text-2xl xs:text-3xl font-bold rounded-xl
                     transition-all duration-300 transform
                     ${isSolved 
                       ? 'animate-tile-win text-white shadow-xl shadow-green-500/20' 
@@ -193,9 +204,41 @@ export default function App() {
             )}
           </div>
 
+          {/* Row Right buttons - Aligned with Grid */}
+          <div className="absolute top-6 xs:top-8 bottom-6 xs:bottom-8 right-0 flex flex-col justify-between py-0 translate-x-1/2">
+            <div className="grid grid-rows-4 gap-2 xs:gap-3 h-full">
+              {[0, 1, 2, 3].map(i => (
+                <div key={i} className="flex items-center">
+                  <button 
+                    onClick={() => handleShiftRow(i, 1)}
+                    disabled={lastMoveType === 'row' || movesRemaining === 0 || isSolved}
+                    className={`p-2 bg-slate-700 rounded-full hover:bg-cyan-500 transition-all shadow-lg group ${ (lastMoveType === 'row' || movesRemaining === 0 || isSolved) ? 'opacity-20 grayscale cursor-not-allowed' : ''}`}
+                  >
+                    <ChevronRight size={20} className="group-active:scale-125 transition-transform" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Column Down buttons - Aligned with Grid */}
+          <div className="absolute bottom-0 left-6 xs:left-8 right-6 xs:right-8 grid grid-cols-4 gap-2 xs:gap-3 translate-y-1/2">
+            {[0, 1, 2, 3].map(i => (
+              <div key={i} className="flex justify-center">
+                <button 
+                  onClick={() => handleShiftCol(i, 1)}
+                  disabled={lastMoveType === 'col' || movesRemaining === 0 || isSolved}
+                  className={`p-2 bg-slate-700 rounded-full hover:bg-cyan-500 transition-all shadow-lg group ${ (lastMoveType === 'col' || movesRemaining === 0 || isSolved) ? 'opacity-20 grayscale cursor-not-allowed' : ''}`}
+                >
+                  <ChevronDown size={20} className="group-active:scale-125 transition-transform" />
+                </button>
+              </div>
+            ))}
+          </div>
+
           {/* OVERLAY MODAL */}
           {canShowModal && (
-            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-8 bg-slate-900/95 rounded-3xl backdrop-blur-sm animate-in fade-in zoom-in duration-300">
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 bg-slate-900/95 rounded-3xl backdrop-blur-sm animate-in fade-in zoom-in duration-300">
               {isSolved && (
                 <button 
                   onClick={() => setShowModal(false)}
@@ -205,17 +248,17 @@ export default function App() {
                 </button>
               )}
               
-              <div className="text-center space-y-6">
+              <div className="text-center space-y-6 w-full">
                 {isSolved ? (
                   <>
                     <div className="flex flex-col items-center gap-2">
-                      <Trophy size={64} className="text-green-400 animate-bounce" />
-                      <h2 className="text-4xl font-black text-white">SOLVED!</h2>
-                      <p className="text-slate-300">Masterful work on the train today.</p>
+                      <Trophy size={48} className="text-green-400 animate-bounce" />
+                      <h2 className="text-3xl font-black text-white">SOLVED!</h2>
+                      <p className="text-slate-300 text-sm">Masterful work on the train.</p>
                     </div>
                     <button 
                       onClick={shareResult}
-                      className="w-full py-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-2xl font-black text-xl transition-all transform hover:scale-105 active:scale-95 shadow-xl"
+                      className="w-full py-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-2xl font-black text-xl transition-all shadow-xl"
                     >
                       SHARE RESULT
                     </button>
@@ -224,72 +267,45 @@ export default function App() {
                   <>
                     <div className="space-y-2">
                       <h2 className="text-4xl font-black text-red-400">OUT OF MOVES</h2>
-                      <p className="text-slate-300">Don't give up now!</p>
+                      <p className="text-slate-300">Try again!</p>
                     </div>
                     <button 
                       onClick={resetLevel}
-                      className="w-full py-4 bg-slate-100 text-slate-900 rounded-2xl font-black text-xl hover:bg-white transition-all transform hover:scale-105 active:scale-95 shadow-xl"
+                      className="w-full py-4 bg-slate-100 text-slate-900 rounded-2xl font-black text-xl hover:bg-white transition-all shadow-xl"
                     >
-                      TRY AGAIN
+                      RETRY
                     </button>
                   </>
                 )}
               </div>
             </div>
           )}
-
-          {/* Row Right buttons */}
-          <div className="absolute top-8 bottom-8 right-0 flex flex-col justify-between py-2 translate-x-1/2">
-            {[0, 1, 2, 3].map(i => (
-              <button 
-                key={i} 
-                onClick={() => handleShiftRow(i, 1)}
-                disabled={lastMoveType === 'row' || movesRemaining === 0 || isSolved}
-                className={`p-2 bg-slate-700 rounded-full hover:bg-cyan-500 transition-all shadow-lg group ${(lastMoveType === 'row' || movesRemaining === 0 || isSolved) ? 'opacity-20 grayscale cursor-not-allowed' : ''}`}
-              >
-                <ChevronRight size={20} className="group-active:scale-125 transition-transform" />
-              </button>
-            ))}
-          </div>
-
-          {/* Column Down buttons */}
-          <div className="absolute bottom-0 left-8 right-8 flex justify-between px-2 translate-y-1/2">
-            {[0, 1, 2, 3].map(i => (
-              <button 
-                key={i} 
-                onClick={() => handleShiftCol(i, 1)}
-                disabled={lastMoveType === 'col' || movesRemaining === 0 || isSolved}
-                className={`p-2 bg-slate-700 rounded-full hover:bg-cyan-500 transition-all shadow-lg group ${(lastMoveType === 'col' || movesRemaining === 0 || isSolved) ? 'opacity-20 grayscale cursor-not-allowed' : ''}`}
-              >
-                <ChevronDown size={20} className="group-active:scale-125 transition-transform" />
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* STATUS AREA */}
-        <div className="flex flex-col items-center justify-center pt-2 relative">
-          <div className={`text-2xl font-bold tracking-tight ${movesRemaining === 1 && !isSolved ? 'text-red-500 animate-pulse' : 'text-slate-300'}`}>
-            Moves Left: <span className="text-cyan-400">{movesRemaining}</span>
-          </div>
+        <div className="w-full flex flex-col items-center justify-center relative min-h-[80px]">
+          {isSolved ? (
+            !showModal && (
+              <button 
+                onClick={() => setShowModal(true)}
+                className="text-3xl font-black text-cyan-400 hover:text-cyan-300 underline decoration-4 underline-offset-8 transition-all"
+              >
+                SEE RESULTS
+              </button>
+            )
+          ) : (
+            <div className={`text-2xl font-bold tracking-tight ${movesRemaining === 1 ? 'text-red-500 animate-pulse' : 'text-slate-300'}`}>
+              Moves Left: <span className="text-cyan-400">{movesRemaining}</span>
+            </div>
+          )}
 
-          <div className="absolute right-0 top-2">
-            <span className="text-slate-500 text-sm font-mono tracking-tighter">
+          <div className="absolute right-0 top-0">
+            <span className="text-slate-500 text-xs font-mono tracking-tighter">
               #{levelId}
             </span>
           </div>
-          
-          <div className="h-12 flex items-center mt-2">
-            {isSolved && !showModal && (
-              <button 
-                onClick={() => setShowModal(true)}
-                className="text-cyan-400 hover:text-cyan-300 font-bold underline decoration-2 underline-offset-4 transition-all"
-              >
-                See Results
-              </button>
-            )}
-          </div>
         </div>
+
       </div>
     </div>
   );
