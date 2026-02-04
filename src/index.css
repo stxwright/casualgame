@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+@layer utilities {
+  @keyframes tile-win {
+    0%, 100% { transform: scale(1) rotate(0deg); background-color: var(--color-green-500); }
+    50% { transform: scale(1.1) rotate(3deg); background-color: var(--color-green-400); }
+  }
+  .animate-tile-win {
+    animation: tile-win 0.6s ease-in-out infinite;
+  }
+}
