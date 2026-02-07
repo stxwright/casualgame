@@ -98,7 +98,7 @@ export default function App() {
   const canShowModal = (isSolved && showModal) || (!isSolved && showFailureModal);
 
   return (
-    <div className="flex h-screen w-screen flex-col items-center justify-center bg-slate-950 p-4 font-sans select-none overflow-hidden">
+    <div className="flex h-screen w-screen flex-col items-center justify-center bg-slate-900 p-4 font-sans select-none overflow-hidden">
       
       <header className="mb-[calc(var(--s)*0.4)] text-center">
         <h1 style={{ fontSize: 'calc(var(--s)*0.8)' }} className="font-black tracking-tight text-blue-500 leading-none">WORDWRAP</h1>
@@ -106,7 +106,7 @@ export default function App() {
       </header>
 
       <div 
-        className="relative bg-slate-800 rounded-[calc(var(--s)*0.4)] border border-slate-700 shadow-2xl"
+        className="relative bg-slate-700 rounded-[calc(var(--s)*0.4)] border border-slate-600 shadow-2xl"
         style={{ 
           padding: 'var(--board-padding)',
           width: 'calc(var(--s)*4 + var(--gap)*3 + var(--board-padding)*2)',
@@ -120,7 +120,7 @@ export default function App() {
               <div key={i} className="flex justify-center">
                 <button onClick={() => handleMove('col', i, -1)} disabled={lastMoveType==='col' || movesRemaining===0 || isSolved}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginTop: 'calc(var(--btn-size) * -0.5)' }}
-                  className="flex items-center justify-center rounded-full bg-slate-600 text-slate-200 shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
+                  className="flex items-center justify-center rounded-full bg-slate-500 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
                   <ChevronUp size={ICON_SIZE} />
                 </button>
               </div>
@@ -135,7 +135,7 @@ export default function App() {
               <div key={i} className="flex items-center">
                 <button onClick={() => handleMove('row', i, -1)} disabled={lastMoveType==='row' || movesRemaining===0 || isSolved}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginLeft: 'calc(var(--btn-size) * -0.5)' }}
-                  className="flex items-center justify-center rounded-full bg-slate-600 text-slate-200 shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
+                  className="flex items-center justify-center rounded-full bg-slate-500 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
                   <ChevronLeft size={ICON_SIZE} />
                 </button>
               </div>
@@ -149,7 +149,7 @@ export default function App() {
             <div key={`${r}-${c}`}
               style={{ width: 'var(--s)', height: 'var(--s)', fontSize: 'calc(var(--s) * 0.7)', animationDelay: isSolved ? `${(r*4+c)*100}ms` : '0ms' }}
               className={`flex items-center justify-center font-bold rounded-[calc(var(--s)*0.15)]
-                ${isSolved ? 'bg-green-600 text-white animate-tile-win' : 'bg-slate-700 text-slate-100 shadow-[inset_0_calc(var(--s)*-0.08)_0_rgba(0,0,0,0.3)]'}`}
+                ${isSolved ? 'bg-green-600 text-white animate-tile-win' : 'bg-slate-600 text-white shadow-[inset_0_calc(var(--s)*-0.08)_0_rgba(0,0,0,0.3)]'}`}
             >
               <span style={{ transform: isSolved ? 'none' : 'translateY(-4%)' }}>
                 {char}
@@ -165,7 +165,7 @@ export default function App() {
               <div key={i} className="flex items-center">
                 <button onClick={() => handleMove('row', i, 1)} disabled={lastMoveType==='row' || movesRemaining===0 || isSolved}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginLeft: 'calc(var(--btn-size) * -0.5)' }}
-                  className="flex items-center justify-center rounded-full bg-slate-600 text-slate-200 shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
+                  className="flex items-center justify-center rounded-full bg-slate-500 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
                   <ChevronRight size={ICON_SIZE} />
                 </button>
               </div>
@@ -180,7 +180,7 @@ export default function App() {
               <div key={i} className="flex justify-center">
                 <button onClick={() => handleMove('col', i, 1)} disabled={lastMoveType==='col' || movesRemaining===0 || isSolved}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginTop: 'calc(var(--btn-size) * -0.5)' }}
-                  className="flex items-center justify-center rounded-full bg-slate-600 text-slate-200 shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
+                  className="flex items-center justify-center rounded-full bg-slate-500 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
                   <ChevronDown size={ICON_SIZE} />
                 </button>
               </div>
@@ -227,7 +227,7 @@ export default function App() {
             Moves Left: <span className="text-cyan-400">{movesRemaining}</span>
           </div>
         )}
-        <div style={{ fontSize: 'calc(var(--s)*0.15)' }} className="mt-2 font-mono text-slate-600 opacity-50">#{levelId}</div>
+        <div style={{ fontSize: 'calc(var(--s)*0.25)' }} className="mt-2 font-mono text-slate-400 opacity-90">#{levelId}</div>
       </footer>
 
     </div>
