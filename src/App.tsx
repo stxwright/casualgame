@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X } from 'lucide-react';
 import gridsData from './data/grids.json';
 import wordsData from './data/words.json';
@@ -13,6 +13,7 @@ export default function App() {
   const [movesRemaining, setMovesRemaining] = useState(2);
   const [isSolved, setIsSolved] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showFailureModal, setShowFailureModal] = useState(false);
   const [lastMoveType, setLastMoveType] = useState<'row' | 'col' | null>(null);
 
   const startNewGame = useCallback(() => {
@@ -34,6 +35,7 @@ export default function App() {
     setMovesRemaining(2);
     setIsSolved(false);
     setShowModal(false);
+    setShowFailureModal(false);
     setLastMoveType(null);
   }, []);
 
@@ -60,11 +62,29 @@ export default function App() {
       ? (() => { const g = [...grid.map(r => [...r])]; g[idx] = shiftArray(g[idx], dir); return g; })()
       : shiftColumn(grid, idx, dir);
     setGrid(newGrid);
-    setMovesRemaining(m => m - 1);
+    
+    const newMovesRemaining = movesRemaining - 1;
+    setMovesRemaining(newMovesRemaining);
     setLastMoveType(type);
-    if (newGrid.every(r => VALID_WORDS.has(r.join(''))) && [0,1,2,3].every(c => VALID_WORDS.has(newGrid.map(r => r[c]).join('')))) {
+
+    const won = newGrid.every(r => VALID_WORDS.has(r.join(''))) && [0,1,2,3].every(c => VALID_WORDS.has(newGrid.map(r => r[c]).join('')));
+    
+    if (won) {
       setIsSolved(true);
       setTimeout(() => setShowModal(true), 2500);
+    } else if (newMovesRemaining === 0) {
+      setShowFailureModal(true);
+    }
+  };
+
+  const resetLevel = () => {
+    if (initialGrid) {
+      setGrid(initialGrid.map(r => [...r]));
+      setMovesRemaining(2);
+      setIsSolved(false);
+      setShowModal(false);
+      setShowFailureModal(false);
+      setLastMoveType(null);
     }
   };
 
@@ -75,6 +95,7 @@ export default function App() {
   };
 
   const ICON_SIZE = 'calc(var(--s) * 0.45)';
+  const canShowModal = (isSolved && showModal) || (!isSolved && showFailureModal);
 
   return (
     <div className="flex h-screen w-screen flex-col items-center justify-center bg-slate-950 p-4 font-sans select-none overflow-hidden">
@@ -99,7 +120,7 @@ export default function App() {
               <div key={i} className="flex justify-center">
                 <button onClick={() => handleMove('col', i, -1)} disabled={lastMoveType==='col' || movesRemaining===0 || isSolved}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginTop: 'calc(var(--btn-size) * -0.5)' }}
-                  className="flex items-center justify-center rounded-full bg-slate-700 text-slate-400 shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
+                  className="flex items-center justify-center rounded-full bg-slate-600 text-slate-200 shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
                   <ChevronUp size={ICON_SIZE} />
                 </button>
               </div>
@@ -114,7 +135,7 @@ export default function App() {
               <div key={i} className="flex items-center">
                 <button onClick={() => handleMove('row', i, -1)} disabled={lastMoveType==='row' || movesRemaining===0 || isSolved}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginLeft: 'calc(var(--btn-size) * -0.5)' }}
-                  className="flex items-center justify-center rounded-full bg-slate-700 text-slate-400 shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
+                  className="flex items-center justify-center rounded-full bg-slate-600 text-slate-200 shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
                   <ChevronLeft size={ICON_SIZE} />
                 </button>
               </div>
@@ -125,12 +146,14 @@ export default function App() {
         {/* TILES GRID */}
         <div className="grid grid-cols-4 grid-rows-4 gap-[var(--gap)] w-full h-full">
           {grid.map((row, r) => row.map((char, c) => (
-            <div key={`${r}-${c}`} 
+            <div key={`${r}-${c}`}
               style={{ width: 'var(--s)', height: 'var(--s)', fontSize: 'calc(var(--s) * 0.7)', animationDelay: isSolved ? `${(r*4+c)*100}ms` : '0ms' }}
-              className={`flex items-center justify-center font-bold rounded-[calc(var(--s)*0.15)] leading-none
+              className={`flex items-center justify-center font-bold rounded-[calc(var(--s)*0.15)]
                 ${isSolved ? 'bg-green-600 text-white animate-tile-win' : 'bg-slate-700 text-slate-100 shadow-[inset_0_calc(var(--s)*-0.08)_0_rgba(0,0,0,0.3)]'}`}
             >
-              {char}
+              <span style={{ transform: isSolved ? 'none' : 'translateY(-4%)' }}>
+                {char}
+              </span>
             </div>
           )))}
         </div>
@@ -142,7 +165,7 @@ export default function App() {
               <div key={i} className="flex items-center">
                 <button onClick={() => handleMove('row', i, 1)} disabled={lastMoveType==='row' || movesRemaining===0 || isSolved}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginLeft: 'calc(var(--btn-size) * -0.5)' }}
-                  className="flex items-center justify-center rounded-full bg-slate-700 text-slate-400 shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
+                  className="flex items-center justify-center rounded-full bg-slate-600 text-slate-200 shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
                   <ChevronRight size={ICON_SIZE} />
                 </button>
               </div>
@@ -157,7 +180,7 @@ export default function App() {
               <div key={i} className="flex justify-center">
                 <button onClick={() => handleMove('col', i, 1)} disabled={lastMoveType==='col' || movesRemaining===0 || isSolved}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginTop: 'calc(var(--btn-size) * -0.5)' }}
-                  className="flex items-center justify-center rounded-full bg-slate-700 text-slate-400 shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
+                  className="flex items-center justify-center rounded-full bg-slate-600 text-slate-200 shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
                   <ChevronDown size={ICON_SIZE} />
                 </button>
               </div>
@@ -166,20 +189,20 @@ export default function App() {
         </div>
 
         {/* WIN/LOSE MODAL */}
-        {initialGrid && ((isSolved && showModal) || (!isSolved && movesRemaining === 0)) && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in">
+        {canShowModal && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
             {isSolved && <button onClick={() => setShowModal(false)} className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors"><X size={32}/></button>}
             <div className="text-center p-8">
               {isSolved ? (
                 <>
                   <Trophy className="mx-auto mb-4 text-green-500 animate-bounce" size={64} />
-                  <h2 className="text-4xl font-black mb-6">SOLVED!</h2>
-                  <button onClick={shareResult} className="w-full rounded-xl bg-blue-600 py-4 text-xl font-bold hover:bg-blue-500 shadow-xl">SHARE RESULT</button>
+                  <h2 className="text-4xl font-black mb-6 text-white">SOLVED!</h2>
+                  <button onClick={shareResult} className="w-full rounded-xl bg-blue-600 py-4 text-xl font-bold hover:bg-blue-500 shadow-xl text-white">SHARE RESULT</button>
                 </>
               ) : (
                 <>
                   <h2 className="text-4xl font-black text-red-500 mb-6 uppercase leading-tight">OUT OF MOVES</h2>
-                  <button onClick={() => startNewGame()} className="w-full rounded-xl bg-slate-100 py-4 text-xl font-bold text-slate-900 hover:bg-white shadow-xl">RETRY</button>
+                  <button onClick={resetLevel} className="w-full rounded-xl bg-slate-100 py-4 text-xl font-bold text-slate-900 hover:bg-white shadow-xl">RETRY</button>
                 </>
               )}
             </div>
