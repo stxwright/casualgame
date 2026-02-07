@@ -1,11 +1,32 @@
 @import "tailwindcss";
 
+:root {
+  /* The Master Unit: One Tile */
+  --s: min(18vw, 13vh);
+  /* Derived Units */
+  --gap: calc(var(--s) * 0.1);
+  --board-padding: calc(var(--s) * 0.2);
+  --btn-size: calc(var(--s) * 0.7);
+}
+
 @layer utilities {
   @keyframes tile-win {
-    0%, 100% { transform: scale(1) rotate(0deg); background-color: var(--color-green-500); }
-    50% { transform: scale(1.1) rotate(3deg); background-color: var(--color-green-400); }
+    0%, 100% { transform: scale(1); background-color: var(--color-green-600); }
+    50% { transform: scale(1.05) rotate(1deg); background-color: var(--color-green-500); }
   }
   .animate-tile-win {
     animation: tile-win 0.6s ease-in-out infinite;
   }
+}
+
+body {
+  margin: 0;
+  background-color: #020617;
+  color: white;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
