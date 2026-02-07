@@ -210,13 +210,18 @@ export default function App() {
         )}
       </div>
 
-      <footer className="mt-[calc(var(--s)*0.4)] text-center min-h-[10vh]">
+      <footer className="mt-[calc(var(--s)*0.4)] text-center min-h-[calc(var(--s)*0.8)]">
         {isSolved ? (
-          !showModal && (
-            <button onClick={() => setShowModal(true)} style={{ fontSize: 'calc(var(--s)*0.5)' }} className="font-black text-cyan-400 underline decoration-4 underline-offset-8">
-              SEE RESULTS
-            </button>
-          )
+          <button 
+            onClick={() => setShowModal(true)} 
+            style={{ 
+              fontSize: 'calc(var(--s)*0.5)', 
+              visibility: showModal ? 'hidden' : 'visible' 
+            }} 
+            className="font-black text-cyan-400 underline decoration-4 underline-offset-8"
+          >
+            SEE RESULTS
+          </button>
         ) : (
           <div style={{ fontSize: 'calc(var(--s)*0.4)' }} className={`font-bold tracking-tight ${movesRemaining === 1 ? 'text-red-500 animate-pulse' : 'text-slate-300'}`}>
             Moves Left: <span className="text-cyan-400">{movesRemaining}</span>

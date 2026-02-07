@@ -2,7 +2,7 @@
 
 :root {
   /* The Master Unit: One Tile */
-  --s: min(18vw, 13vh);
+  --s: min(16vw, 12.5vh);
   /* Derived Units */
   --gap: calc(var(--s) * 0.1);
   --board-padding: calc(var(--s) * 0.2);
