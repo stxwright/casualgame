@@ -186,8 +186,6 @@ export default function App() {
   const ICON_SIZE = 'calc(var(--s) * 0.45)';
   const canShowModal = (isSolved && showModal) || (!isSolved && showFailureModal);
 
-  const [showDatePicker, setShowDatePicker] = useState(false);
-
   return (
     <div className="flex h-screen w-screen flex-col items-center justify-center bg-slate-900 p-4 font-sans select-none overflow-hidden">
       
