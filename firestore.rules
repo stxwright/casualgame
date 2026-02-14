@@ -4,7 +4,7 @@ service cloud.firestore {
 
     // Puzzles: readable only if publishDate is now or in the past
     match /puzzles/{date} {
-      allow read: if resource.data.publishDate <= request.time;
+      allow read: if resource.data.publishDate <= request.time + duration.value(14, 'h');
       allow write: if false; 
     }
 

@@ -20,7 +20,12 @@ export default function App() {
   const startNewGame = useCallback(async () => {
     setIsLoading(true);
     let puzzleData: any = null;
-    const today = new Date().toISOString().slice(0, 10);
+    
+    // Get local YYYY-MM-DD
+    const now = new Date();
+    const offset = now.getTimezoneOffset();
+    const localDate = new Date(now.getTime() - (offset * 60 * 1000));
+    const today = localDate.toISOString().slice(0, 10);
     
     try {
       const snap = await getDoc(doc(db, 'puzzles', today));
@@ -126,13 +131,16 @@ export default function App() {
   const canShowModal = (isSolved && showModal) || (!isSolved && showFailureModal);
 
   return (
-    <div className="flex h-screen w-screen flex-col items-center justify-center bg-slate-900 p-4 font-sans select-none overflow-hidden">
+    <div className="flex h-screen w-screen flex-col items-center justify-center bg-slate-900 p-4 select-none overflow-hidden">
       
       <header 
         className="mb-[calc(var(--s)*0.4)] text-center"
         style={{ width: 'calc(var(--s)*4 + var(--gap)*3 + var(--board-padding)*2)' }}
       >
-        <h1 style={{ fontSize: 'calc(var(--s)*0.8)' }} className="font-black tracking-tight text-blue-500 leading-none">WORDWRAP</h1>
+        <h1 style={{ fontSize: 'calc(var(--s)*0.85)' }} className="font-black tracking-tight leading-none">
+          <span className="text-white">Word</span>
+          <span className="text-blue-500">Wrap</span>
+        </h1>
         <p style={{ fontSize: 'calc(var(--s)*0.25)' }} className="text-slate-400 font-medium italic opacity-80 mt-1">4 words across, 4 words down</p>
       </header>
 
