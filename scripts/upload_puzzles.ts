@@ -4,7 +4,7 @@ import { getFirestore, doc, setDoc, Timestamp } from "firebase/firestore";
 import * as dotenv from "dotenv";
 import * as fs from "fs";
 
-dotenv.config();
+dotenv.config({ path: './.env' }); // Assuming run from project root
 
 const firebaseConfig = {
   apiKey: process.env.VITE_FIREBASE_API_KEY,
@@ -30,7 +30,7 @@ function generateScrambleMoves(count: number) {
 }
 
 async function uploadPuzzles() {
-  const grids = JSON.parse(fs.readFileSync("./src/data/grids.json", "utf-8"));
+  const grids = JSON.parse(fs.readFileSync("./scripts/data/grids.json", "utf-8"));
   const startDate = new Date();
   const countToUpload = Math.min(grids.length, 30);
   
@@ -40,7 +40,7 @@ async function uploadPuzzles() {
     const dateStr = puzzleDate.toISOString().split('T')[0];
     const solutionRows = grids[i]; // Store as array of strings
     
-    const moveCount = Math.floor(Math.random() * 2) + 2;
+    const moveCount = 2;
     const scrambleMoves = generateScrambleMoves(moveCount);
     
     console.log(`Uploading puzzle for ${dateStr} (${moveCount} moves)...`);

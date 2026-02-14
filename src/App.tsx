@@ -1,13 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, User as UserIcon, LogOut, Calendar } from 'lucide-react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut, User } from 'firebase/auth';
-import { db, auth } from './firebase';
-import gridsData from './data/grids.json';
-import wordsData from './data/words.json';
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from './firebase';
 import { Grid } from './types';
-
-const VALID_WORDS = new Set(wordsData);
 
 export default function App() {
   const [grid, setGrid] = useState<Grid>([[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' ']]);
@@ -21,85 +16,56 @@ export default function App() {
   const [showFailureModal, setShowFailureModal] = useState(false);
   const [lastMoveType, setLastMoveType] = useState<'row' | 'col' | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
-  const [showDatePicker, setShowDatePicker] = useState(false);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const handleSignIn = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (e) {
-      console.error("Sign in error", e);
-    }
-  };
-
-  const handleSignOut = () => signOut(auth);
 
   const startNewGame = useCallback(async () => {
     setIsLoading(true);
     let puzzleData: any = null;
+    const today = new Date().toISOString().slice(0, 10);
     
     try {
-      const snap = await getDoc(doc(db, 'puzzles', selectedDate));
+      const snap = await getDoc(doc(db, 'puzzles', today));
       if (snap.exists()) {
         puzzleData = snap.data();
+      } else {
+        console.warn("No puzzle found for today:", today);
       }
     } catch (e) {
       console.error("Error fetching daily puzzle:", e);
     }
 
-    let finalSolution: Grid;
-    let finalScrambleMoves: {type: 'row' | 'col', idx: number, dir: number}[];
-
     if (puzzleData) {
-      finalSolution = puzzleData.solution.map((row: string) => row.split(''));
-      finalScrambleMoves = puzzleData.scrambleMoves;
-      setLevelId(selectedDate);
+      const finalSolution: Grid = puzzleData.solution.map((row: string) => row.split(''));
+      const finalScrambleMoves: {type: 'row' | 'col', idx: number, dir: number}[] = puzzleData.scrambleMoves;
+      setLevelId(today);
+
+      // Apply scramble moves to the solution to create the starting grid
+      let scrambledGrid = finalSolution.map(r => [...r]);
+      finalScrambleMoves.forEach((move: {type: 'row' | 'col', idx: number, dir: number}) => {
+        if (move.type === 'row') {
+          scrambledGrid[move.idx] = shiftArray(scrambledGrid[move.idx], move.dir);
+        } else {
+          scrambledGrid = shiftColumn(scrambledGrid, move.idx, move.dir);
+        }
+      });
+
+      setSolution(finalSolution);
+      setGrid(scrambledGrid);
+      setInitialGrid(scrambledGrid.map(r => [...r]));
+      setMovesRemaining(finalScrambleMoves.length);
+      setTotalMoves(finalScrambleMoves.length);
+      setIsSolved(false);
+      setShowModal(false);
+      setShowFailureModal(false);
+      setLastMoveType(null);
     } else {
-      // Fallback to random logic
-      const randomIndex = Math.floor(Math.random() * gridsData.length);
-      finalSolution = gridsData[randomIndex].map(row => row.split(''));
-      finalScrambleMoves = [];
-      const startWithRow = Math.random() > 0.5;
-      for (let i = 0; i < 2; i++) {
-        finalScrambleMoves.push({
-          type: (i % 2 === 0) ? (startWithRow ? 'row' : 'col') : (startWithRow ? 'col' : 'row'),
-          idx: Math.floor(Math.random() * 4),
-          dir: Math.random() > 0.5 ? 1 : -1
-        });
-      }
-      setLevelId(randomIndex + 1);
+      setGrid(Array(4).fill(null).map(() => Array(4).fill(' ')));
+      setSolution(null);
+      setMovesRemaining(0);
+      setTotalMoves(0);
     }
 
-    // Apply scramble moves to the solution to create the starting grid
-    let scrambledGrid = finalSolution.map(r => [...r]);
-    finalScrambleMoves.forEach(move => {
-      if (move.type === 'row') {
-        scrambledGrid[move.idx] = shiftArray(scrambledGrid[move.idx], move.dir);
-      } else {
-        scrambledGrid = shiftColumn(scrambledGrid, move.idx, move.dir);
-      }
-    });
-
-    setSolution(finalSolution);
-    setGrid(scrambledGrid);
-    setInitialGrid(scrambledGrid.map(r => [...r]));
-    setMovesRemaining(finalScrambleMoves.length);
-    setTotalMoves(finalScrambleMoves.length);
-    setIsSolved(false);
-    setShowModal(false);
-    setShowFailureModal(false);
-    setLastMoveType(null);
     setIsLoading(false);
-  }, [selectedDate]);
+  }, []);
 
   useEffect(() => { startNewGame(); }, [startNewGame]);
 
@@ -118,31 +84,6 @@ export default function App() {
     return newGrid;
   };
 
-  const getPreviousDateString = (dateStr: string) => {
-    const d = new Date(dateStr);
-    d.setDate(d.getDate() - 1);
-    return d.toISOString().slice(0, 10);
-  };
-
-  const recordResult = async (won: boolean) => {
-    if (!user || typeof levelId !== 'string') return;
-    
-    const ref = doc(db, 'users', user.uid);
-    const snap = await getDoc(ref);
-    const data = snap.exists() ? snap.data() : { streak: 0, lastPlayed: null, history: {} };
-
-    const yesterday = getPreviousDateString(levelId);
-    const newStreak = won && data.lastPlayed === yesterday
-      ? (data.streak || 0) + 1
-      : won ? 1 : 0;
-
-    await setDoc(ref, {
-      streak: newStreak,
-      lastPlayed: levelId,
-      history: { ...data.history, [levelId]: { won } }
-    }, { merge: true });
-  };
-
   const handleMove = (type: 'row' | 'col', idx: number, dir: number) => {
     if (isSolved || movesRemaining <= 0 || lastMoveType === type) return;
     const newGrid = type === 'row' 
@@ -158,11 +99,9 @@ export default function App() {
     
     if (won) {
       setIsSolved(true);
-      recordResult(true);
       setTimeout(() => setShowModal(true), 2500);
     } else if (newMovesRemaining === 0) {
       setShowFailureModal(true);
-      recordResult(false);
     }
   };
 
@@ -189,47 +128,10 @@ export default function App() {
   return (
     <div className="flex h-screen w-screen flex-col items-center justify-center bg-slate-900 p-4 font-sans select-none overflow-hidden">
       
-      <header className="relative mb-[calc(var(--s)*0.4)] text-center w-full max-w-md">
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-2">
-          <button onClick={() => setShowDatePicker(!showDatePicker)} className="p-2 text-slate-400 hover:text-white transition-colors">
-            <Calendar size={20} />
-          </button>
-          {showDatePicker && (
-            <input 
-              type="date" 
-              value={selectedDate}
-              max={new Date().toISOString().slice(0, 10)}
-              onChange={(e) => {
-                setSelectedDate(e.target.value);
-                setShowDatePicker(false);
-              }}
-              className="absolute top-full left-0 mt-1 bg-slate-800 text-white p-2 rounded-lg border border-slate-700 z-50"
-            />
-          )}
-          {selectedDate !== new Date().toISOString().slice(0, 10) && (
-            <button 
-              onClick={() => setSelectedDate(new Date().toISOString().slice(0, 10))}
-              className="text-[calc(var(--s)*0.2)] font-bold text-blue-400 hover:underline"
-            >
-              TODAY
-            </button>
-          )}
-        </div>
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-2">
-          {user ? (
-            <div className="flex items-center gap-2">
-              <img src={user.photoURL || ''} alt={user.displayName || ''} className="w-8 h-8 rounded-full border border-slate-600" />
-              <button onClick={handleSignOut} className="p-2 text-slate-400 hover:text-white transition-colors">
-                <LogOut size={20} />
-              </button>
-            </div>
-          ) : (
-            <button onClick={handleSignIn} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors text-sm font-bold border border-slate-700">
-              <UserIcon size={16} />
-              LOGIN
-            </button>
-          )}
-        </div>
+      <header 
+        className="mb-[calc(var(--s)*0.4)] text-center"
+        style={{ width: 'calc(var(--s)*4 + var(--gap)*3 + var(--board-padding)*2)' }}
+      >
         <h1 style={{ fontSize: 'calc(var(--s)*0.8)' }} className="font-black tracking-tight text-blue-500 leading-none">WORDWRAP</h1>
         <p style={{ fontSize: 'calc(var(--s)*0.25)' }} className="text-slate-400 font-medium italic opacity-80 mt-1">4 words across, 4 words down</p>
       </header>
