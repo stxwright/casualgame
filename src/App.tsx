@@ -12,8 +12,10 @@ const VALID_WORDS = new Set(wordsData);
 export default function App() {
   const [grid, setGrid] = useState<Grid>([[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' ']]);
   const [initialGrid, setInitialGrid] = useState<Grid | null>(null);
+  const [solution, setSolution] = useState<Grid | null>(null);
   const [levelId, setLevelId] = useState<string | number>(0);
   const [movesRemaining, setMovesRemaining] = useState(2);
+  const [totalMoves, setTotalMoves] = useState(2);
   const [isSolved, setIsSolved] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showFailureModal, setShowFailureModal] = useState(false);
@@ -21,6 +23,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
@@ -42,50 +45,55 @@ export default function App() {
 
   const startNewGame = useCallback(async () => {
     setIsLoading(true);
-    const dateToFetch = selectedDate;
+    let puzzleData: any = null;
     
     try {
-      const snap = await getDoc(doc(db, 'puzzles', dateToFetch));
+      const snap = await getDoc(doc(db, 'puzzles', selectedDate));
       if (snap.exists()) {
-        const puzzleData = snap.data();
-        let newGrid: Grid;
-        if (Array.isArray(puzzleData.board[0])) {
-          newGrid = puzzleData.board;
-        } else {
-          newGrid = (puzzleData.board as string[]).map(row => row.split(''));
-        }
-        setGrid(newGrid);
-        setInitialGrid(newGrid.map(r => [...r]));
-        setLevelId(dateToFetch);
-        setMovesRemaining(2);
-        setIsSolved(false);
-        setShowModal(false);
-        setShowFailureModal(false);
-        setLastMoveType(null);
-        setIsLoading(false);
-        return;
+        puzzleData = snap.data();
       }
     } catch (e) {
       console.error("Error fetching daily puzzle:", e);
     }
 
-    // Fallback to random logic if it's today or fetch failed
-    const randomIndex = Math.floor(Math.random() * gridsData.length);
-    const randomGrid = gridsData[randomIndex];
-    const newGrid = randomGrid.map(row => row.split(''));
-    let shuffledGrid = [...newGrid.map(r => [...r])];
-    const startWithRow = Math.random() > 0.5;
-    for (let i = 0; i < 2; i++) {
-      const isRow = (i % 2 === 0) ? startWithRow : !startWithRow;
-      const idx = Math.floor(Math.random() * 4);
-      const dir = Math.random() > 0.5 ? 1 : -1;
-      if (isRow) shuffledGrid[idx] = shiftArray(shuffledGrid[idx], dir);
-      else shuffledGrid = shiftColumn(shuffledGrid, idx, dir);
+    let finalSolution: Grid;
+    let finalScrambleMoves: {type: 'row' | 'col', idx: number, dir: number}[];
+
+    if (puzzleData) {
+      finalSolution = puzzleData.solution.map((row: string) => row.split(''));
+      finalScrambleMoves = puzzleData.scrambleMoves;
+      setLevelId(selectedDate);
+    } else {
+      // Fallback to random logic
+      const randomIndex = Math.floor(Math.random() * gridsData.length);
+      finalSolution = gridsData[randomIndex].map(row => row.split(''));
+      finalScrambleMoves = [];
+      const startWithRow = Math.random() > 0.5;
+      for (let i = 0; i < 2; i++) {
+        finalScrambleMoves.push({
+          type: (i % 2 === 0) ? (startWithRow ? 'row' : 'col') : (startWithRow ? 'col' : 'row'),
+          idx: Math.floor(Math.random() * 4),
+          dir: Math.random() > 0.5 ? 1 : -1
+        });
+      }
+      setLevelId(randomIndex + 1);
     }
-    setGrid(shuffledGrid);
-    setInitialGrid(shuffledGrid.map(r => [...r]));
-    setLevelId(randomIndex + 1);
-    setMovesRemaining(2);
+
+    // Apply scramble moves to the solution to create the starting grid
+    let scrambledGrid = finalSolution.map(r => [...r]);
+    finalScrambleMoves.forEach(move => {
+      if (move.type === 'row') {
+        scrambledGrid[move.idx] = shiftArray(scrambledGrid[move.idx], move.dir);
+      } else {
+        scrambledGrid = shiftColumn(scrambledGrid, move.idx, move.dir);
+      }
+    });
+
+    setSolution(finalSolution);
+    setGrid(scrambledGrid);
+    setInitialGrid(scrambledGrid.map(r => [...r]));
+    setMovesRemaining(finalScrambleMoves.length);
+    setTotalMoves(finalScrambleMoves.length);
     setIsSolved(false);
     setShowModal(false);
     setShowFailureModal(false);
@@ -146,7 +154,7 @@ export default function App() {
     setMovesRemaining(newMovesRemaining);
     setLastMoveType(type);
 
-    const won = newGrid.every(r => VALID_WORDS.has(r.join(''))) && [0,1,2,3].every(c => VALID_WORDS.has(newGrid.map(r => r[c]).join('')));
+    const won = JSON.stringify(newGrid) === JSON.stringify(solution);
     
     if (won) {
       setIsSolved(true);
@@ -161,7 +169,7 @@ export default function App() {
   const resetLevel = () => {
     if (initialGrid) {
       setGrid(initialGrid.map(r => [...r]));
-      setMovesRemaining(2);
+      setMovesRemaining(totalMoves);
       setIsSolved(false);
       setShowModal(false);
       setShowFailureModal(false);
@@ -170,7 +178,7 @@ export default function App() {
   };
 
   const shareResult = () => {
-    const text = `WordWrap #${levelId} (${2 - movesRemaining}/2)\n\n🟩🟩🟩🟩\n🟩🟩🟩🟩\n🟩🟩🟩🟩\n🟩🟩🟩🟩`;
+    const text = `WordWrap #${levelId} (${totalMoves - movesRemaining}/${totalMoves})\n\n🟩🟩🟩🟩\n🟩🟩🟩🟩\n🟩🟩🟩🟩\n🟩🟩🟩🟩`;
     navigator.clipboard.writeText(text);
     alert('Copied to clipboard!');
   };

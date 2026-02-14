@@ -5,7 +5,7 @@ service cloud.firestore {
     // Puzzles: readable only if publishDate is now or in the past
     match /puzzles/{date} {
       allow read: if resource.data.publishDate <= request.time;
-      allow write: if false; // only writable via Admin SDK / Firebase Console
+      allow write: if false; 
     }
 
     // Users: each user can only read/write their own document
