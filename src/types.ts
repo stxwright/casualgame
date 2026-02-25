@@ -14,3 +14,14 @@ export interface Attempt {
   moves: Move[];
   feedback: Feedback[];
 }
+
+export interface GameState {
+  levelId: string;
+  grid: Grid;
+  attempts: Attempt[];
+  currentAttemptMoves: Move[];
+  currentAttemptFeedback: Feedback[];
+  movesRemaining: number;
+  isSolved: boolean;
+  lastMoveType: MoveType | null;
+}
