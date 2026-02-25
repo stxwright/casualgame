@@ -1,10 +1,72 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, Share2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, Share2, Calendar } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore/lite';
 import { db } from './firebase';
 import { Grid, Move, Attempt, Feedback, GameState, MoveType } from './types';
 
 const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
+
+const getTodayDateString = () => {
+  const now = new Date();
+  const offset = now.getTimezoneOffset();
+  const localDate = new Date(now.getTime() - (offset * 60 * 1000));
+  return localDate.toISOString().slice(0, 10);
+};
+
+interface ArchiveModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSelect: (date: string) => void;
+  currentLevelId: string | number;
+  solvedDates: Set<string>;
+  archiveDates: string[];
+}
+
+const ArchiveModal = ({ isOpen, onClose, onSelect, currentLevelId, solvedDates, archiveDates }: ArchiveModalProps) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="absolute inset-0 z-[70] flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
+      <button onClick={onClose} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+        <X size={32}/>
+      </button>
+      <div className="flex flex-col h-full w-full max-w-sm p-8">
+        <h2 className="text-3xl font-black mb-6 text-white text-center">PUZZLE ARCHIVE</h2>
+        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+          <div className="flex flex-col gap-2">
+            {archiveDates.map((date) => {
+              const puzzleNum = Math.floor((new Date(date + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+              const isCurrent = date === currentLevelId;
+              const isSolvedLocally = solvedDates.has(date);
+
+              return (
+                <button
+                  key={date}
+                  onClick={() => onSelect(date)}
+                  className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all active:scale-95 ${
+                    isCurrent
+                      ? 'bg-blue-600 border-blue-400 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]'
+                      : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500 hover:bg-slate-700 shadow-lg'
+                  }`}
+                >
+                  <div className="text-left">
+                    <div className="font-black text-lg">Puzzle #{puzzleNum}</div>
+                    <div className="text-sm opacity-60 font-bold">{date}</div>
+                  </div>
+                  {isSolvedLocally && (
+                    <div className="bg-green-500 p-1.5 rounded-full shadow-lg">
+                      <Trophy size={16} className="text-white" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function App() {
   const [grid, setGrid] = useState<Grid>([[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' ']]);
@@ -24,32 +86,70 @@ export default function App() {
   const [currentAttemptMoves, setCurrentAttemptMoves] = useState<Move[]>([]);
   const [currentAttemptFeedback, setCurrentAttemptFeedback] = useState<Feedback[]>([]);
   const [showCopied, setShowCopied] = useState(false);
+  const [showArchive, setShowArchive] = useState(false);
 
-  const startNewGame = useCallback(async () => {
+  const archiveDates = useState(() => {
+    const dates = [];
+    let current = new Date(LAUNCH_DATE);
+    const todayStr = getTodayDateString();
+    const today = new Date(todayStr + 'T00:00:00Z');
+    while (current <= today) {
+      dates.push(current.toISOString().slice(0, 10));
+      current.setDate(current.getDate() + 1);
+    }
+    return dates.reverse();
+  })[0];
+
+  const solvedDates = useState(() => {
+    const solved = new Set<string>();
+    archiveDates.forEach(date => {
+      const stateStr = localStorage.getItem(`wordwrap_game_state_${date}`);
+      if (stateStr) {
+        try {
+          if (JSON.parse(stateStr).isSolved) solved.add(date);
+        } catch(e){}
+      }
+    });
+    return solved;
+  })[0];
+
+  // Update solvedDates when isSolved changes or archive is opened
+  useEffect(() => {
+    if (showArchive || isSolved) {
+      archiveDates.forEach(date => {
+        const stateStr = localStorage.getItem(`wordwrap_game_state_${date}`);
+        if (stateStr) {
+          try {
+            if (JSON.parse(stateStr).isSolved) solvedDates.add(date);
+          } catch(e){}
+        }
+      });
+    }
+  }, [showArchive, isSolved, archiveDates, solvedDates]);
+
+  const startNewGame = useCallback(async (selectedDate?: string) => {
     setIsLoading(true);
     let puzzleData: any = null;
     
-    const now = new Date();
-    const offset = now.getTimezoneOffset();
-    const localDate = new Date(now.getTime() - (offset * 60 * 1000));
-    const today = localDate.toISOString().slice(0, 10);
+    const today = getTodayDateString();
+    const targetDate = selectedDate || today;
     
     try {
-      const snap = await getDoc(doc(db, 'puzzles', today));
+      const snap = await getDoc(doc(db, 'puzzles', targetDate));
       if (snap.exists()) {
         puzzleData = snap.data();
       } else {
-        console.warn("No puzzle found for today:", today);
+        console.warn("No puzzle found for date:", targetDate);
       }
     } catch (e) {
-      console.error("Error fetching daily puzzle:", e);
+      console.error("Error fetching puzzle:", e);
     }
 
     if (puzzleData) {
       const finalSolution: Grid = puzzleData.solution.map((row: string) => row.split(''));
       const finalScrambleMoves: {type: 'row' | 'col', idx: number, dir: number}[] = puzzleData.scrambleMoves;
       
-      const pNum = Math.floor((new Date(today + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const pNum = Math.floor((new Date(targetDate + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
       setPuzzleNumber(pNum);
 
       const solMoves: Move[] = finalScrambleMoves.map(m => ({
@@ -71,24 +171,33 @@ export default function App() {
       setSolution(finalSolution);
       setInitialGrid(scrambledGrid.map(r => [...r]));
 
-      const savedStateStr = localStorage.getItem('wordwrap_game_state');
+      const savedStateStr = localStorage.getItem(`wordwrap_game_state_${targetDate}`);
+      const oldStateStr = localStorage.getItem('wordwrap_game_state');
       let loaded = false;
-      if (savedStateStr) {
-        try {
-          const savedState: GameState = JSON.parse(savedStateStr);
-          if (savedState.levelId === today) {
-            setGrid(savedState.grid);
-            setAttempts(savedState.attempts);
-            setCurrentAttemptMoves(savedState.currentAttemptMoves);
-            setCurrentAttemptFeedback(savedState.currentAttemptFeedback);
-            setMovesRemaining(savedState.movesRemaining);
-            setIsSolved(savedState.isSolved);
-            setLastMoveType(savedState.lastMoveType);
-            loaded = true;
+
+      let savedState: GameState | null = null;
+      try {
+        if (savedStateStr) {
+          savedState = JSON.parse(savedStateStr);
+        } else if (oldStateStr) {
+          const potentialState = JSON.parse(oldStateStr);
+          if (potentialState.levelId === targetDate) {
+            savedState = potentialState;
           }
-        } catch (e) {
-          console.error("Error parsing saved state:", e);
         }
+      } catch (e) {
+        console.error("Error parsing saved state:", e);
+      }
+
+      if (savedState) {
+        setGrid(savedState.grid);
+        setAttempts(savedState.attempts);
+        setCurrentAttemptMoves(savedState.currentAttemptMoves);
+        setCurrentAttemptFeedback(savedState.currentAttemptFeedback);
+        setMovesRemaining(savedState.movesRemaining);
+        setIsSolved(savedState.isSolved);
+        setLastMoveType(savedState.lastMoveType);
+        loaded = true;
       }
 
       if (!loaded) {
@@ -101,7 +210,7 @@ export default function App() {
         setCurrentAttemptFeedback([]);
       }
 
-      setLevelId(today);
+      setLevelId(targetDate);
       setShowModal(false);
       setShowFailureModal(false);
     } else {
@@ -129,7 +238,7 @@ export default function App() {
       lastMoveType
     };
 
-    localStorage.setItem('wordwrap_game_state', JSON.stringify(state));
+    localStorage.setItem(`wordwrap_game_state_${levelId}`, JSON.stringify(state));
   }, [levelId, grid, attempts, currentAttemptMoves, currentAttemptFeedback, movesRemaining, isSolved, lastMoveType, isLoading]);
 
   const shiftArray = (arr: string[], dir: number) => {
@@ -252,6 +361,7 @@ export default function App() {
   const ICON_SIZE = 'calc(var(--s) * 0.45)';
   const canShowModal = (isSolved && showModal) || (!isSolved && showFailureModal);
 
+
   return (
     <main className="flex h-screen w-screen flex-col items-center justify-center bg-slate-900 p-4 select-none overflow-hidden">
       
@@ -259,6 +369,13 @@ export default function App() {
         className="mb-[calc(var(--s)*0.4)] text-center relative"
         style={{ width: 'calc(var(--s)*4 + var(--gap)*3 + var(--board-padding)*2)' }}
       >
+        <button
+          onClick={() => setShowArchive(true)}
+          className="absolute -left-10 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-all hover:scale-110 active:scale-90 max-sm:-left-6"
+          aria-label="Archive"
+        >
+          <Calendar size={28} />
+        </button>
         <h1 style={{ fontSize: 'calc(var(--s)*0.85)' }} className="font-black tracking-tight leading-none">
           <span className="text-white">Word</span>
           <span className="text-blue-400">Wrap</span>
@@ -457,11 +574,33 @@ export default function App() {
             </div>
           </div>
         )}
-        <div style={{ fontSize: 'calc(var(--s)*0.25)' }} className="mt-4 font-mono text-slate-400 font-bold tracking-widest uppercase">
-          Puzzle #{puzzleNumber}
+        <div style={{ fontSize: 'calc(var(--s)*0.25)' }} className="mt-4 flex items-center gap-4">
+          <div className="font-mono text-slate-400 font-bold tracking-widest uppercase">
+            Puzzle #{puzzleNumber}
+          </div>
+          {levelId !== getTodayDateString() && (
+            <button
+              onClick={() => startNewGame()}
+              style={{ fontSize: 'calc(var(--s)*0.25)' }}
+              className="text-blue-400 font-black hover:underline uppercase tracking-widest transition-all active:scale-95"
+            >
+              Back to Today
+            </button>
+          )}
         </div>
       </footer>
 
+      <ArchiveModal
+        isOpen={showArchive}
+        onClose={() => setShowArchive(false)}
+        onSelect={(date) => {
+          startNewGame(date);
+          setShowArchive(false);
+        }}
+        currentLevelId={levelId}
+        solvedDates={solvedDates}
+        archiveDates={archiveDates}
+      />
     </main>
   );
 }
