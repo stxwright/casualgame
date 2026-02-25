@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://casualga.me/sitemap.xml

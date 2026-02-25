@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, Share2, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, Share2 } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore/lite';
 import { db } from './firebase';
 import { Grid, Move, Attempt, Feedback } from './types';
@@ -250,7 +250,7 @@ export default function App() {
                   aria-label={`Shift column ${i + 1} up`}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginTop: 'calc(var(--btn-size) * -0.5)' }}
                   className="flex items-center justify-center rounded-full bg-slate-600 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
-                  <ChevronUp size={ICON_SIZE} />
+                  <ChevronUp size={24} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
                 </button>
               </div>
             ))}
@@ -268,7 +268,7 @@ export default function App() {
                   aria-label={`Shift row ${i + 1} left`}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginLeft: 'calc(var(--btn-size) * -0.5)' }}
                   className="flex items-center justify-center rounded-full bg-slate-600 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
-                  <ChevronLeft size={ICON_SIZE} />
+                  <ChevronLeft size={24} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
                 </button>
               </div>
             ))}
@@ -301,7 +301,7 @@ export default function App() {
                   aria-label={`Shift row ${i + 1} right`}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginLeft: 'calc(var(--btn-size) * -0.5)' }}
                   className="flex items-center justify-center rounded-full bg-slate-600 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
-                  <ChevronRight size={ICON_SIZE} />
+                  <ChevronRight size={24} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
                 </button>
               </div>
             ))}
@@ -319,7 +319,7 @@ export default function App() {
                   aria-label={`Shift column ${i + 1} down`}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginTop: 'calc(var(--btn-size) * -0.5)' }}
                   className="flex items-center justify-center rounded-full bg-slate-600 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
-                  <ChevronDown size={ICON_SIZE} />
+                  <ChevronDown size={24} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
                 </button>
               </div>
             ))}
