@@ -11,8 +11,8 @@
 
 @layer utilities {
   @keyframes tile-win {
-    0%, 100% { transform: scale(1); background-color: var(--color-green-600); }
-    50% { transform: scale(1.05) rotate(1deg); background-color: var(--color-green-500); }
+    0%, 100% { transform: scale(1); background-color: var(--color-green-700); }
+    50% { transform: scale(1.05) rotate(1deg); background-color: var(--color-green-600); }
   }
   .animate-tile-win {
     animation: tile-win 0.6s ease-in-out infinite;

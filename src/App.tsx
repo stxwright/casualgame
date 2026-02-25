@@ -212,7 +212,7 @@ export default function App() {
   const canShowModal = (isSolved && showModal) || (!isSolved && showFailureModal);
 
   return (
-    <div className="flex h-screen w-screen flex-col items-center justify-center bg-slate-900 p-4 select-none overflow-hidden">
+    <main className="flex h-screen w-screen flex-col items-center justify-center bg-slate-900 p-4 select-none overflow-hidden">
       
       <header 
         className="mb-[calc(var(--s)*0.4)] text-center relative"
@@ -220,9 +220,9 @@ export default function App() {
       >
         <h1 style={{ fontSize: 'calc(var(--s)*0.85)' }} className="font-black tracking-tight leading-none">
           <span className="text-white">Word</span>
-          <span className="text-blue-500">Wrap</span>
+          <span className="text-blue-400">Wrap</span>
         </h1>
-        <p style={{ fontSize: 'calc(var(--s)*0.25)' }} className="text-slate-400 font-medium italic opacity-80 mt-1">4 words across, 4 words down</p>
+        <p style={{ fontSize: 'calc(var(--s)*0.25)' }} className="text-slate-300 font-medium italic mt-1">4 words across, 4 words down</p>
       </header>
 
       <div 
@@ -244,9 +244,12 @@ export default function App() {
           <div className="grid grid-cols-4 gap-[var(--gap)]">
             {[0,1,2,3].map(i => (
               <div key={i} className="flex justify-center">
-                <button onClick={() => handleMove('col', i, -1)} disabled={lastMoveType==='col' || movesRemaining===0 || isSolved || attempts.length >= 6}
+                <button
+                  onClick={() => handleMove('col', i, -1)}
+                  disabled={lastMoveType==='col' || movesRemaining===0 || isSolved || attempts.length >= 6}
+                  aria-label={`Shift column ${i + 1} up`}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginTop: 'calc(var(--btn-size) * -0.5)' }}
-                  className="flex items-center justify-center rounded-full bg-slate-500 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
+                  className="flex items-center justify-center rounded-full bg-slate-600 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
                   <ChevronUp size={ICON_SIZE} />
                 </button>
               </div>
@@ -259,9 +262,12 @@ export default function App() {
           <div className="grid grid-rows-4 gap-[var(--gap)] h-full">
             {[0,1,2,3].map(i => (
               <div key={i} className="flex items-center">
-                <button onClick={() => handleMove('row', i, -1)} disabled={lastMoveType==='row' || movesRemaining===0 || isSolved || attempts.length >= 6}
+                <button
+                  onClick={() => handleMove('row', i, -1)}
+                  disabled={lastMoveType==='row' || movesRemaining===0 || isSolved || attempts.length >= 6}
+                  aria-label={`Shift row ${i + 1} left`}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginLeft: 'calc(var(--btn-size) * -0.5)' }}
-                  className="flex items-center justify-center rounded-full bg-slate-500 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
+                  className="flex items-center justify-center rounded-full bg-slate-600 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
                   <ChevronLeft size={ICON_SIZE} />
                 </button>
               </div>
@@ -275,7 +281,7 @@ export default function App() {
             <div key={`${r}-${c}`}
               style={{ width: 'var(--s)', height: 'var(--s)', fontSize: 'calc(var(--s) * 0.7)', animationDelay: isSolved ? `${(r*4+c)*100}ms` : '0ms' }}
               className={`flex items-center justify-center font-bold rounded-[calc(var(--s)*0.15)]
-                ${isSolved ? 'bg-green-600 text-white animate-tile-win' : 'bg-slate-600 text-white shadow-[inset_0_calc(var(--s)*-0.08)_0_rgba(0,0,0,0.3)]'}`}
+                ${isSolved ? 'bg-green-700 text-white animate-tile-win' : 'bg-slate-600 text-white shadow-[inset_0_calc(var(--s)*-0.08)_0_rgba(0,0,0,0.3)]'}`}
             >
               <span style={{ transform: isSolved ? 'none' : 'translateY(-4%)' }}>
                 {char}
@@ -289,9 +295,12 @@ export default function App() {
           <div className="grid grid-rows-4 gap-[var(--gap)] h-full">
             {[0,1,2,3].map(i => (
               <div key={i} className="flex items-center">
-                <button onClick={() => handleMove('row', i, 1)} disabled={lastMoveType==='row' || movesRemaining===0 || isSolved || attempts.length >= 6}
+                <button
+                  onClick={() => handleMove('row', i, 1)}
+                  disabled={lastMoveType==='row' || movesRemaining===0 || isSolved || attempts.length >= 6}
+                  aria-label={`Shift row ${i + 1} right`}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginLeft: 'calc(var(--btn-size) * -0.5)' }}
-                  className="flex items-center justify-center rounded-full bg-slate-500 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
+                  className="flex items-center justify-center rounded-full bg-slate-600 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
                   <ChevronRight size={ICON_SIZE} />
                 </button>
               </div>
@@ -304,9 +313,12 @@ export default function App() {
           <div className="grid grid-cols-4 gap-[var(--gap)]">
             {[0,1,2,3].map(i => (
               <div key={i} className="flex justify-center">
-                <button onClick={() => handleMove('col', i, 1)} disabled={lastMoveType==='col' || movesRemaining===0 || isSolved || attempts.length >= 6}
+                <button
+                  onClick={() => handleMove('col', i, 1)}
+                  disabled={lastMoveType==='col' || movesRemaining===0 || isSolved || attempts.length >= 6}
+                  aria-label={`Shift column ${i + 1} down`}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginTop: 'calc(var(--btn-size) * -0.5)' }}
-                  className="flex items-center justify-center rounded-full bg-slate-500 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
+                  className="flex items-center justify-center rounded-full bg-slate-600 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
                   <ChevronDown size={ICON_SIZE} />
                 </button>
               </div>
@@ -317,7 +329,7 @@ export default function App() {
         {/* WIN/LOSE MODAL */}
         {canShowModal && (
           <div className="absolute inset-0 z-50 flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
-            {isSolved && <button onClick={() => setShowModal(false)} className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors"><X size={32}/></button>}
+            {isSolved && <button onClick={() => setShowModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"><X size={32}/></button>}
             <div className="text-center p-8 w-full max-w-sm">
               {isSolved ? (
                 <>
@@ -342,13 +354,13 @@ export default function App() {
                 </>
               ) : (
                 <>
-                  <h2 className="text-4xl font-black text-red-500 mb-2 uppercase leading-tight">FAILED</h2>
+                  <h2 className="text-4xl font-black text-red-400 mb-2 uppercase leading-tight">FAILED</h2>
                   <p className="text-slate-400 mb-6 font-bold">The solution was:</p>
                   
                   {/* Reveal Solution */}
                   <div className="grid grid-cols-4 gap-1 mb-8 mx-auto w-fit">
                     {solution?.map((row, r) => row.map((char, c) => (
-                      <div key={`${r}-${c}`} className="w-8 h-8 bg-green-600 text-white flex items-center justify-center font-bold text-xs rounded-sm">
+                      <div key={`${r}-${c}`} className="w-8 h-8 bg-green-700 text-white flex items-center justify-center font-bold text-xs rounded-sm">
                         {char}
                       </div>
                     )))}
@@ -378,7 +390,7 @@ export default function App() {
           <div className="flex flex-col items-center gap-3">
             <div className="flex items-center gap-4 bg-slate-800/50 px-6 py-3 rounded-2xl border border-slate-700/50 shadow-inner">
               <div className="flex flex-col items-start">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 leading-none mb-1">Attempt</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 leading-none mb-1">Attempt</span>
                 <span className="text-2xl font-black text-white leading-none">
                   {Math.min(attempts.length + 1, 6)}<span className="text-slate-600 mx-1">/</span>6
                 </span>
@@ -387,7 +399,7 @@ export default function App() {
               <div className="h-8 w-px bg-slate-700" />
               
               <div className="flex flex-col items-start">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 leading-none mb-1">Moves</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 leading-none mb-1">Moves</span>
                 <div className="flex gap-1.5">
                   {[...Array(2)].map((_, i) => (
                     <div 
@@ -404,11 +416,11 @@ export default function App() {
             </div>
           </div>
         )}
-        <div style={{ fontSize: 'calc(var(--s)*0.25)' }} className="mt-4 font-mono text-slate-500 font-bold tracking-widest uppercase">
+        <div style={{ fontSize: 'calc(var(--s)*0.25)' }} className="mt-4 font-mono text-slate-400 font-bold tracking-widest uppercase">
           Puzzle #{puzzleNumber}
         </div>
       </footer>
 
-    </div>
+    </main>
   );
 }
