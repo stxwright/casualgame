@@ -16,7 +16,7 @@ export default function App() {
   const [isSolved, setIsSolved] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showFailureModal, setShowFailureModal] = useState(false);
-  const [lastMoveType, setLastMoveType] = useState<'row' | 'col' | null>(null);
+  const [lastMoveType, setLastMoveType] = useState<MoveType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
   const [requiredMoves, setRequiredMoves] = useState<Move[]>([]);
@@ -161,7 +161,7 @@ export default function App() {
     return 'incorrect';
   };
 
-  const handleMove = (type: 'row' | 'col', idx: number, dir: number) => {
+  const handleMove = (type: MoveType, idx: number, dir: number) => {
     if (isSolved || attempts.length >= 6 || movesRemaining <= 0 || lastMoveType === type) return;
     
     const move: Move = { type, idx, dir };
