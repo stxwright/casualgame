@@ -25,43 +25,57 @@ interface ArchiveModalProps {
 const ArchiveModal = ({ isOpen, onClose, onSelect, currentLevelId, solvedDates, archiveDates }: ArchiveModalProps) => {
   if (!isOpen) return null;
 
+  // Group dates by Month and Year
+  const groups = archiveDates.reduce((acc, date) => {
+    const d = new Date(date + 'T00:00:00Z');
+    const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    if (!acc[label]) acc[label] = [];
+    acc[label].push(date);
+    return acc;
+  }, {} as Record<string, string[]>);
+
   return (
     <div className="absolute inset-0 z-[70] flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
-      <button onClick={onClose} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+      <button onClick={onClose} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-10">
         <X size={32}/>
       </button>
-      <div className="flex flex-col h-full w-full max-w-sm p-8">
+      <div className="flex flex-col h-full w-full max-w-sm p-8 pb-4">
         <h2 className="text-3xl font-black mb-6 text-white text-center">PUZZLE ARCHIVE</h2>
         <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-          <div className="flex flex-col gap-2">
-            {archiveDates.map((date) => {
-              const puzzleNum = Math.floor((new Date(date + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-              const isCurrent = date === currentLevelId;
-              const isSolvedLocally = solvedDates.has(date);
+          {Object.entries(groups).map(([label, dates]) => (
+            <div key={label} className="mb-6 last:mb-2">
+              <h3 className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-3 ml-1">{label}</h3>
+              <div className="flex flex-col gap-2">
+                {dates.map((date) => {
+                  const puzzleNum = Math.floor((new Date(date + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                  const isCurrent = date === currentLevelId;
+                  const isSolvedLocally = solvedDates.has(date);
 
-              return (
-                <button
-                  key={date}
-                  onClick={() => onSelect(date)}
-                  className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all active:scale-95 ${
-                    isCurrent
-                      ? 'bg-blue-600 border-blue-400 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]'
-                      : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500 hover:bg-slate-700 shadow-lg'
-                  }`}
-                >
-                  <div className="text-left">
-                    <div className="font-black text-lg">Puzzle #{puzzleNum}</div>
-                    <div className="text-sm opacity-60 font-bold">{date}</div>
-                  </div>
-                  {isSolvedLocally && (
-                    <div className="bg-green-500 p-1.5 rounded-full shadow-lg">
-                      <Trophy size={16} className="text-white" />
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                  return (
+                    <button
+                      key={date}
+                      onClick={() => onSelect(date)}
+                      className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all active:scale-95 ${
+                        isCurrent
+                          ? 'bg-blue-600 border-blue-400 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]'
+                          : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500 hover:bg-slate-700 shadow-lg'
+                      }`}
+                    >
+                      <div className="text-left">
+                        <div className="font-black text-lg leading-tight">Puzzle #{puzzleNum}</div>
+                        <div className="text-xs opacity-60 font-bold">{date}</div>
+                      </div>
+                      {isSolvedLocally && (
+                        <div className="bg-green-500 p-1.5 rounded-full shadow-lg shrink-0">
+                          <Trophy size={14} className="text-white" />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -100,32 +114,34 @@ export default function App() {
     return dates.reverse();
   })[0];
 
-  const solvedDates = useState(() => {
-    const solved = new Set<string>();
-    archiveDates.forEach(date => {
-      const stateStr = localStorage.getItem(`wordwrap_game_state_${date}`);
-      if (stateStr) {
-        try {
-          if (JSON.parse(stateStr).isSolved) solved.add(date);
-        } catch(e){}
-      }
-    });
-    return solved;
-  })[0];
+  const [solvedDates, setSolvedDates] = useState<Set<string>>(new Set());
 
-  // Update solvedDates when isSolved changes or archive is opened
+  // Migration and Index Initialization
   useEffect(() => {
-    if (showArchive || isSolved) {
+    const savedSolved = localStorage.getItem('wordwrap_solved_puzzles');
+    if (savedSolved) {
+      try {
+        setSolvedDates(new Set(JSON.parse(savedSolved)));
+      } catch (e) {
+        console.error("Error parsing solved puzzles index:", e);
+      }
+    } else {
+      // One-time migration: crawl existing keys
+      const solved = new Set<string>();
       archiveDates.forEach(date => {
         const stateStr = localStorage.getItem(`wordwrap_game_state_${date}`);
         if (stateStr) {
           try {
-            if (JSON.parse(stateStr).isSolved) solvedDates.add(date);
+            if (JSON.parse(stateStr).isSolved) solved.add(date);
           } catch(e){}
         }
       });
+      if (solved.size > 0) {
+        setSolvedDates(solved);
+        localStorage.setItem('wordwrap_solved_puzzles', JSON.stringify(Array.from(solved)));
+      }
     }
-  }, [showArchive, isSolved, archiveDates, solvedDates]);
+  }, [archiveDates]);
 
   const startNewGame = useCallback(async (selectedDate?: string) => {
     setIsLoading(true);
@@ -296,6 +312,15 @@ export default function App() {
     if (won) {
       setIsSolved(true);
       setAttempts(prev => [...prev, { moves: newAttemptMoves, feedback: newAttemptFeedback }]);
+
+      // Update solved puzzles index
+      setSolvedDates(prev => {
+        const next = new Set(prev);
+        next.add(levelId as string);
+        localStorage.setItem('wordwrap_solved_puzzles', JSON.stringify(Array.from(next)));
+        return next;
+      });
+
       setTimeout(() => setShowModal(true), 2000);
     } else if (newMovesRemaining === 0) {
       const finishedAttempt = { moves: newAttemptMoves, feedback: newAttemptFeedback };
