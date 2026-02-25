@@ -220,7 +220,7 @@ export default function App() {
       >
         <h1 style={{ fontSize: 'calc(var(--s)*0.85)' }} className="font-black tracking-tight leading-none">
           <span className="text-white">Word</span>
-          <span className="text-blue-500">Wrap</span>
+          <span className="text-red-500">Wrap</span>
         </h1>
         <p style={{ fontSize: 'calc(var(--s)*0.25)' }} className="text-slate-400 font-medium italic opacity-80 mt-1">4 words across, 4 words down</p>
       </header>
