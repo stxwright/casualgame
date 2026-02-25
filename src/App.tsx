@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, Share2 } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore/lite';
 import { db } from './firebase';
-import { Grid, Move, Attempt, Feedback } from './types';
+import { Grid, Move, Attempt, Feedback, GameState, MoveType } from './types';
 
 const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
 
@@ -48,7 +48,6 @@ export default function App() {
     if (puzzleData) {
       const finalSolution: Grid = puzzleData.solution.map((row: string) => row.split(''));
       const finalScrambleMoves: {type: 'row' | 'col', idx: number, dir: number}[] = puzzleData.scrambleMoves;
-      setLevelId(today);
       
       const pNum = Math.floor((new Date(today + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
       setPuzzleNumber(pNum);
@@ -70,16 +69,41 @@ export default function App() {
       });
 
       setSolution(finalSolution);
-      setGrid(scrambledGrid);
       setInitialGrid(scrambledGrid.map(r => [...r]));
-      setMovesRemaining(2);
-      setIsSolved(false);
+
+      const savedStateStr = localStorage.getItem('wordwrap_game_state');
+      let loaded = false;
+      if (savedStateStr) {
+        try {
+          const savedState: GameState = JSON.parse(savedStateStr);
+          if (savedState.levelId === today) {
+            setGrid(savedState.grid);
+            setAttempts(savedState.attempts);
+            setCurrentAttemptMoves(savedState.currentAttemptMoves);
+            setCurrentAttemptFeedback(savedState.currentAttemptFeedback);
+            setMovesRemaining(savedState.movesRemaining);
+            setIsSolved(savedState.isSolved);
+            setLastMoveType(savedState.lastMoveType);
+            loaded = true;
+          }
+        } catch (e) {
+          console.error("Error parsing saved state:", e);
+        }
+      }
+
+      if (!loaded) {
+        setGrid(scrambledGrid);
+        setMovesRemaining(2);
+        setIsSolved(false);
+        setLastMoveType(null);
+        setAttempts([]);
+        setCurrentAttemptMoves([]);
+        setCurrentAttemptFeedback([]);
+      }
+
+      setLevelId(today);
       setShowModal(false);
       setShowFailureModal(false);
-      setLastMoveType(null);
-      setAttempts([]);
-      setCurrentAttemptMoves([]);
-      setCurrentAttemptFeedback([]);
     } else {
       setGrid(Array(4).fill(null).map(() => Array(4).fill(' ')));
       setSolution(null);
@@ -90,6 +114,23 @@ export default function App() {
   }, []);
 
   useEffect(() => { startNewGame(); }, [startNewGame]);
+
+  useEffect(() => {
+    if (levelId === 0 || isLoading) return;
+
+    const state: GameState = {
+      levelId: levelId as string,
+      grid,
+      attempts,
+      currentAttemptMoves,
+      currentAttemptFeedback,
+      movesRemaining,
+      isSolved,
+      lastMoveType
+    };
+
+    localStorage.setItem('wordwrap_game_state', JSON.stringify(state));
+  }, [levelId, grid, attempts, currentAttemptMoves, currentAttemptFeedback, movesRemaining, isSolved, lastMoveType, isLoading]);
 
   const shiftArray = (arr: string[], dir: number) => {
     const newArr = [...arr];
