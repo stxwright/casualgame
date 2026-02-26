@@ -58,7 +58,7 @@ export default function App() {
         type: m.type as 'row' | 'col',
         idx: m.idx,
         dir: -m.dir
-      }));
+      })).reverse();
       setRequiredMoves(solMoves);
 
       let scrambledGrid = finalSolution.map(r => [...r]);
@@ -95,6 +95,9 @@ export default function App() {
       }
 
       let loaded = false;
+      let shouldShowFailure = false;
+      let shouldShowWin = false;
+
       if (savedStateStr) {
         try {
           const savedState: GameState = JSON.parse(savedStateStr);
@@ -105,6 +108,12 @@ export default function App() {
           setMovesRemaining(savedState.movesRemaining);
           setIsSolved(savedState.isSolved);
           setLastMoveType(savedState.lastMoveType);
+
+          if (savedState.isSolved) {
+            shouldShowWin = true;
+          } else if (savedState.attempts.length >= 6) {
+            shouldShowFailure = true;
+          }
           loaded = true;
         } catch (e) {
           console.error("Error parsing saved state:", e);
@@ -122,8 +131,8 @@ export default function App() {
       }
 
       setLevelId(today);
-      setShowModal(false);
-      setShowFailureModal(false);
+      setShowModal(shouldShowWin);
+      setShowFailureModal(shouldShowFailure);
     } else {
       setGrid(Array(4).fill(null).map(() => Array(4).fill(' ')));
       setSolution(null);
@@ -262,6 +271,14 @@ export default function App() {
       navigator.clipboard.writeText(shareText);
       showCopyFeedback();
     }
+  };
+
+  const formatMove = (move: Move) => {
+    const label = move.type === 'row' ? 'Row' : 'Col';
+    const direction = move.type === 'row'
+      ? (move.dir === 1 ? 'Right' : 'Left')
+      : (move.dir === 1 ? 'Down' : 'Up');
+    return `${label} ${move.idx + 1} ${direction}`;
   };
 
   const showCopyFeedback = () => {
@@ -521,11 +538,9 @@ export default function App() {
         {/* WIN/LOSE MODAL */}
         {canShowModal && (
           <div className="absolute inset-0 z-50 flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
-            {isSolved && (
-              <button onClick={() => setShowModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
-                <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
-              </button>
-            )}
+            <button onClick={() => isSolved ? setShowModal(false) : setShowFailureModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+              <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+            </button>
             <div className="text-center p-8 w-full max-w-sm">
               {isSolved ? (
                 <>
@@ -554,12 +569,24 @@ export default function App() {
                   <p className="text-slate-400 mb-6 font-bold">The solution was:</p>
                   
                   {/* Reveal Solution */}
-                  <div className="grid grid-cols-4 gap-1 mb-8 mx-auto w-fit">
+                  <div className="grid grid-cols-4 gap-1 mb-6 mx-auto w-fit">
                     {solution?.map((row, r) => row.map((char, c) => (
                       <div key={`${r}-${c}`} className="w-8 h-8 bg-green-700 text-white flex items-center justify-center font-bold text-xs rounded-sm">
                         {char}
                       </div>
                     )))}
+                  </div>
+
+                  {/* Solution Moves */}
+                  <div className="mb-8">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Required Moves</p>
+                    <div className="flex flex-col gap-1.5 items-center">
+                      {requiredMoves.map((m, i) => (
+                        <span key={i} className="text-white font-bold bg-slate-800 px-4 py-1.5 rounded-xl border border-slate-700 text-sm shadow-inner">
+                          {formatMove(m)}
+                        </span>
+                      ))}
+                    </div>
                   </div>
 
                   <button onClick={shareResult} className="flex items-center justify-center gap-2 w-full rounded-xl bg-slate-700 py-4 text-xl font-bold hover:bg-slate-600 shadow-xl text-white mb-4 transition-all active:scale-95">
@@ -583,9 +610,9 @@ export default function App() {
             <History size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
           </button>
 
-          {isSolved ? (
+          {(isSolved || attempts.length >= 6) ? (
             <button
-              onClick={() => setShowModal(true)}
+              onClick={() => isSolved ? setShowModal(true) : setShowFailureModal(true)}
               style={{ fontSize: 'calc(var(--s)*0.5)' }}
               className="font-black text-cyan-400 underline decoration-4 underline-offset-8"
             >
