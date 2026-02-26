@@ -371,7 +371,9 @@ export default function App() {
         {/* HOW TO PLAY MODAL */}
         {showHelpModal && (
           <div className="absolute inset-0 z-[100] flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
-            <button onClick={() => setShowHelpModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"><X size={32}/></button>
+            <button onClick={() => setShowHelpModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+              <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+            </button>
             <div className="text-center p-6 w-full max-w-sm overflow-y-auto max-h-full custom-scrollbar">
               <h2 className="text-3xl font-black mb-4 text-white uppercase">How to Play</h2>
 
@@ -420,7 +422,11 @@ export default function App() {
         {/* WIN/LOSE MODAL */}
         {canShowModal && (
           <div className="absolute inset-0 z-50 flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
-            {isSolved && <button onClick={() => setShowModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"><X size={32}/></button>}
+            {isSolved && (
+              <button onClick={() => setShowModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+                <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+              </button>
+            )}
             <div className="text-center p-8 w-full max-w-sm">
               {isSolved ? (
                 <>
@@ -469,16 +475,16 @@ export default function App() {
       </div>
 
       <footer className="mt-[calc(var(--s)*0.4)] text-center min-h-[calc(var(--s)*1.2)] flex flex-col items-center justify-start">
-        {isSolved ? (
-          <button 
-            onClick={() => setShowModal(true)} 
-            style={{ fontSize: 'calc(var(--s)*0.5)' }} 
-            className="font-black text-cyan-400 underline decoration-4 underline-offset-8"
-          >
-            SEE RESULTS
-          </button>
-        ) : (
-          <div className="flex flex-col items-center gap-3">
+        <div className="flex items-center gap-3">
+          {isSolved ? (
+            <button
+              onClick={() => setShowModal(true)}
+              style={{ fontSize: 'calc(var(--s)*0.5)' }}
+              className="font-black text-cyan-400 underline decoration-4 underline-offset-8"
+            >
+              SEE RESULTS
+            </button>
+          ) : (
             <div className="flex items-center gap-4 bg-slate-800/50 px-6 py-3 rounded-2xl border border-slate-700/50 shadow-inner">
               <div className="flex flex-col items-start">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 leading-none mb-1">Attempt</span>
@@ -505,20 +511,21 @@ export default function App() {
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+
+          <button
+            onClick={() => setShowHelpModal(true)}
+            className="flex items-center justify-center p-2 rounded-xl bg-slate-800/50 border border-slate-700/50 text-slate-400 hover:text-white transition-all shadow-inner hover:scale-105 active:scale-95"
+            aria-label="How to play"
+          >
+            <HelpCircle size={32} style={{ width: 'calc(var(--s)*0.5)', height: 'calc(var(--s)*0.5)' }} />
+          </button>
+        </div>
+
         <div style={{ fontSize: 'calc(var(--s)*0.25)' }} className="mt-4 font-mono text-slate-400 font-bold tracking-widest uppercase">
           Puzzle #{puzzleNumber}
         </div>
       </footer>
-
-      <button
-        onClick={() => setShowHelpModal(true)}
-        className="fixed bottom-6 right-6 p-2 rounded-full bg-slate-800/50 hover:bg-slate-700/50 text-slate-400 hover:text-white transition-all shadow-lg backdrop-blur-sm border border-slate-700/50"
-        aria-label="How to play"
-      >
-        <HelpCircle size={32} style={{ width: 'calc(var(--s)*0.5)', height: 'calc(var(--s)*0.5)' }} />
-      </button>
 
     </main>
   );
