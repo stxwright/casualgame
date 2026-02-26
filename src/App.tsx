@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, Share2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, Share2, HelpCircle } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore/lite';
 import { db } from './firebase';
 import { Grid, Move, Attempt, Feedback, GameState, MoveType } from './types';
@@ -16,6 +16,7 @@ export default function App() {
   const [isSolved, setIsSolved] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showFailureModal, setShowFailureModal] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const [lastMoveType, setLastMoveType] = useState<MoveType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -253,7 +254,7 @@ export default function App() {
   const canShowModal = (isSolved && showModal) || (!isSolved && showFailureModal);
 
   return (
-    <main className="flex h-screen w-screen flex-col items-center justify-center bg-slate-900 p-4 select-none overflow-hidden">
+    <main className="relative flex h-screen w-screen flex-col items-center justify-center bg-slate-900 p-4 select-none overflow-hidden">
       
       <header 
         className="mb-[calc(var(--s)*0.4)] text-center relative"
@@ -367,10 +368,65 @@ export default function App() {
           </div>
         </div>
 
+        {/* HOW TO PLAY MODAL */}
+        {showHelpModal && (
+          <div className="absolute inset-0 z-[100] flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
+            <button onClick={() => setShowHelpModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+              <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+            </button>
+            <div className="text-center p-6 w-full max-w-sm overflow-y-auto max-h-full custom-scrollbar">
+              <h2 className="text-3xl font-black mb-4 text-white uppercase">How to Play</h2>
+
+              <div className="text-left space-y-4 text-slate-300 text-sm pb-4">
+                <p>Shift rows and columns to arrange letters into <span className="text-white font-bold">4 words across</span> and <span className="text-white font-bold">4 words down</span>.</p>
+
+                <div>
+                  <h3 className="text-blue-400 font-bold uppercase text-xs mb-1">Controls</h3>
+                  <p>Use the arrows around the grid to shift a row or column by one space. You cannot shift the same type (row or column) twice in a row.</p>
+                </div>
+
+                <div>
+                  <h3 className="text-blue-400 font-bold uppercase text-xs mb-1">Attempts</h3>
+                  <p>Each attempt consists of <span className="text-white font-bold">2 moves</span>. You have <span className="text-white font-bold">6 attempts</span> total. If the puzzle isn't solved after 2 moves, the grid resets for your next attempt.</p>
+                </div>
+
+                <div>
+                  <h3 className="text-blue-400 font-bold uppercase text-xs mb-1">Feedback</h3>
+                  <div className="space-y-2 mt-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded bg-green-500 shrink-0" />
+                      <span><span className="text-green-500 font-bold">Correct:</span> This move is part of the solution.</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded bg-yellow-500 shrink-0" />
+                      <span><span className="text-yellow-500 font-bold">Partial:</span> Right row/column, wrong direction.</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 rounded bg-red-500 shrink-0" />
+                      <span><span className="text-red-500 font-bold">Incorrect:</span> This row/column does not need shifting.</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowHelpModal(false)}
+                className="mt-8 w-full rounded-xl bg-blue-600 py-3 text-lg font-bold hover:bg-blue-500 shadow-xl text-white transition-all active:scale-95"
+              >
+                GOT IT!
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* WIN/LOSE MODAL */}
         {canShowModal && (
           <div className="absolute inset-0 z-50 flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
-            {isSolved && <button onClick={() => setShowModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"><X size={32}/></button>}
+            {isSolved && (
+              <button onClick={() => setShowModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+                <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+              </button>
+            )}
             <div className="text-center p-8 w-full max-w-sm">
               {isSolved ? (
                 <>
@@ -419,16 +475,16 @@ export default function App() {
       </div>
 
       <footer className="mt-[calc(var(--s)*0.4)] text-center min-h-[calc(var(--s)*1.2)] flex flex-col items-center justify-start">
-        {isSolved ? (
-          <button 
-            onClick={() => setShowModal(true)} 
-            style={{ fontSize: 'calc(var(--s)*0.5)' }} 
-            className="font-black text-cyan-400 underline decoration-4 underline-offset-8"
-          >
-            SEE RESULTS
-          </button>
-        ) : (
-          <div className="flex flex-col items-center gap-3">
+        <div className="flex items-center gap-3">
+          {isSolved ? (
+            <button
+              onClick={() => setShowModal(true)}
+              style={{ fontSize: 'calc(var(--s)*0.5)' }}
+              className="font-black text-cyan-400 underline decoration-4 underline-offset-8"
+            >
+              SEE RESULTS
+            </button>
+          ) : (
             <div className="flex items-center gap-4 bg-slate-800/50 px-6 py-3 rounded-2xl border border-slate-700/50 shadow-inner">
               <div className="flex flex-col items-start">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 leading-none mb-1">Attempt</span>
@@ -455,8 +511,17 @@ export default function App() {
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+
+          <button
+            onClick={() => setShowHelpModal(true)}
+            className="flex items-center justify-center p-2 rounded-xl bg-slate-800/50 border border-slate-700/50 text-slate-400 hover:text-white transition-all shadow-inner hover:scale-105 active:scale-95"
+            aria-label="How to play"
+          >
+            <HelpCircle size={32} style={{ width: 'calc(var(--s)*0.5)', height: 'calc(var(--s)*0.5)' }} />
+          </button>
+        </div>
+
         <div style={{ fontSize: 'calc(var(--s)*0.25)' }} className="mt-4 font-mono text-slate-400 font-bold tracking-widest uppercase">
           Puzzle #{puzzleNumber}
         </div>
