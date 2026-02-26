@@ -367,10 +367,67 @@ export default function App() {
           </div>
         </div>
 
-        {/* WIN/LOSE MODAL */}
-        {canShowModal && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
-            {isSolved && <button onClick={() => setShowModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"><X size={32}/></button>}
+      </div>
+
+      <footer className="mt-[calc(var(--s)*0.4)] text-center min-h-[calc(var(--s)*1.2)] flex flex-col items-center justify-start">
+        {isSolved ? (
+          !showModal && (
+            <button
+              onClick={() => setShowModal(true)}
+              style={{ fontSize: 'calc(var(--s)*0.5)' }}
+              className="font-black text-cyan-400 underline decoration-4 underline-offset-8"
+            >
+              SEE RESULTS
+            </button>
+          )
+        ) : (
+          <div className="flex flex-col items-center gap-3">
+            <div className="flex items-center gap-4 bg-slate-800/50 px-6 py-3 rounded-2xl border border-slate-700/50 shadow-inner">
+              <div className="flex flex-col items-start">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 leading-none mb-1">Attempt</span>
+                <span className="text-2xl font-black text-white leading-none">
+                  {Math.min(attempts.length + 1, 6)}<span className="text-slate-600 mx-1">/</span>6
+                </span>
+              </div>
+
+              <div className="h-8 w-px bg-slate-700" />
+
+              <div className="flex flex-col items-start">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 leading-none mb-1">Moves</span>
+                <div className="flex gap-1.5">
+                  {[...Array(2)].map((_, i) => (
+                    <div
+                      key={i}
+                      className={`h-4 w-4 rounded-sm transition-all duration-300 ${
+                        i < (2 - movesRemaining)
+                          ? 'bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]'
+                          : 'bg-slate-700'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        <div style={{ fontSize: 'calc(var(--s)*0.25)' }} className="mt-4 font-mono text-slate-400 font-bold tracking-widest uppercase">
+          Puzzle #{puzzleNumber}
+        </div>
+      </footer>
+
+      {/* WIN/LOSE MODAL */}
+      {canShowModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
+          <div className="relative bg-slate-800 rounded-3xl border border-slate-700 shadow-2xl mx-4">
+            {isSolved && (
+              <button
+                onClick={() => setShowModal(false)}
+                aria-label="Close"
+                className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-10"
+              >
+                <X size={32}/>
+              </button>
+            )}
             <div className="text-center p-8 w-full max-w-sm">
               {isSolved ? (
                 <>
@@ -415,52 +472,8 @@ export default function App() {
               )}
             </div>
           </div>
-        )}
-      </div>
-
-      <footer className="mt-[calc(var(--s)*0.4)] text-center min-h-[calc(var(--s)*1.2)] flex flex-col items-center justify-start">
-        {isSolved ? (
-          <button 
-            onClick={() => setShowModal(true)} 
-            style={{ fontSize: 'calc(var(--s)*0.5)' }} 
-            className="font-black text-cyan-400 underline decoration-4 underline-offset-8"
-          >
-            SEE RESULTS
-          </button>
-        ) : (
-          <div className="flex flex-col items-center gap-3">
-            <div className="flex items-center gap-4 bg-slate-800/50 px-6 py-3 rounded-2xl border border-slate-700/50 shadow-inner">
-              <div className="flex flex-col items-start">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 leading-none mb-1">Attempt</span>
-                <span className="text-2xl font-black text-white leading-none">
-                  {Math.min(attempts.length + 1, 6)}<span className="text-slate-600 mx-1">/</span>6
-                </span>
-              </div>
-              
-              <div className="h-8 w-px bg-slate-700" />
-              
-              <div className="flex flex-col items-start">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 leading-none mb-1">Moves</span>
-                <div className="flex gap-1.5">
-                  {[...Array(2)].map((_, i) => (
-                    <div 
-                      key={i} 
-                      className={`h-4 w-4 rounded-sm transition-all duration-300 ${
-                        i < (2 - movesRemaining) 
-                          ? 'bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]' 
-                          : 'bg-slate-700'
-                      }`} 
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-        <div style={{ fontSize: 'calc(var(--s)*0.25)' }} className="mt-4 font-mono text-slate-400 font-bold tracking-widest uppercase">
-          Puzzle #{puzzleNumber}
         </div>
-      </footer>
+      )}
 
     </main>
   );
