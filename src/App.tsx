@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, Share2, HelpCircle, History } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, Share2, HelpCircle, History, XCircle } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore/lite';
 import { db } from './firebase';
 import { Grid, Move, Attempt, Feedback, GameState, MoveType } from './types';
@@ -213,7 +213,14 @@ export default function App() {
       
       if (attempts.length >= 5) {
         setAttempts(prev => [...prev, finishedAttempt]);
-        setShowFailureModal(true);
+        setCurrentAttemptMoves([]);
+        setCurrentAttemptFeedback([]);
+
+        setTimeout(() => {
+          if (solution) setGrid(solution.map(r => [...r]));
+        }, 1000);
+
+        setTimeout(() => setShowFailureModal(true), 2500);
       } else {
         setTimeout(() => {
           if (initialGrid) {
@@ -521,53 +528,42 @@ export default function App() {
         {/* WIN/LOSE MODAL */}
         {canShowModal && (
           <div className="absolute inset-0 z-50 flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
-            {isSolved && (
-              <button onClick={() => setShowModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
-                <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
-              </button>
-            )}
-            <div className="text-center p-8 w-full max-w-sm">
+            <button
+              onClick={() => { setShowModal(false); setShowFailureModal(false); }}
+              aria-label="Close"
+              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+            >
+              <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+            </button>
+            <div className="text-center p-8 w-full max-w-sm overflow-y-auto max-h-full custom-scrollbar items-start">
               {isSolved ? (
                 <>
                   <Trophy className="mx-auto mb-4 text-green-500 animate-bounce" size={64} />
                   <h2 className="text-4xl font-black mb-2 text-white">SOLVED!</h2>
                   <p className="text-slate-400 mb-6 font-bold">In {attempts.length} {attempts.length === 1 ? 'attempt' : 'attempts'}</p>
-                  
-                  <div className="flex flex-col gap-1 mb-8 items-center">
-                    {attempts.map((a, i) => (
-                      <div key={i} className="flex gap-1">
-                        {a.feedback.map((f, j) => (
-                          <div key={j} className={`w-8 h-8 rounded-sm ${f === 'correct' ? 'bg-green-500' : f === 'partial' ? 'bg-yellow-500' : 'bg-red-500'}`} />
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-
-                  <button onClick={shareResult} className="flex items-center justify-center gap-2 w-full rounded-xl bg-blue-600 py-4 text-xl font-bold hover:bg-blue-500 shadow-xl text-white transition-all active:scale-95">
-                    <Share2 size={24} />
-                    {showCopied ? 'COPIED!' : 'SHARE RESULT'}
-                  </button>
                 </>
               ) : (
                 <>
-                  <h2 className="text-4xl font-black text-red-400 mb-2 uppercase leading-tight">FAILED</h2>
-                  <p className="text-slate-400 mb-6 font-bold">The solution was:</p>
-                  
-                  {/* Reveal Solution */}
-                  <div className="grid grid-cols-4 gap-1 mb-8 mx-auto w-fit">
-                    {solution?.map((row, r) => row.map((char, c) => (
-                      <div key={`${r}-${c}`} className="w-8 h-8 bg-green-700 text-white flex items-center justify-center font-bold text-xs rounded-sm">
-                        {char}
-                      </div>
-                    )))}
-                  </div>
-
-                  <button onClick={shareResult} className="flex items-center justify-center gap-2 w-full rounded-xl bg-slate-700 py-4 text-xl font-bold hover:bg-slate-600 shadow-xl text-white mb-4 transition-all active:scale-95">
-                    <Share2 size={24} />
-                    {showCopied ? 'COPIED!' : 'SHARE RESULT'}
-                  </button>
+                  <XCircle className="mx-auto mb-4 text-red-400" size={64} />
+                  <h2 className="text-4xl font-black text-white mb-2 uppercase leading-tight">FAILED</h2>
+                  <p className="text-slate-400 mb-6 font-bold">Better luck tomorrow!</p>
                 </>
               )}
+
+              <div className="flex flex-col gap-1 mb-8 items-center">
+                {attempts.map((a, i) => (
+                  <div key={i} className="flex gap-1">
+                    {a.feedback.map((f, j) => (
+                      <div key={j} className={`w-8 h-8 rounded-sm ${f === 'correct' ? 'bg-green-500' : f === 'partial' ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                    ))}
+                  </div>
+                ))}
+              </div>
+
+              <button onClick={shareResult} className="flex items-center justify-center gap-2 w-full rounded-xl bg-blue-600 py-4 text-xl font-bold hover:bg-blue-500 shadow-xl text-white transition-all active:scale-95">
+                <Share2 size={24} />
+                {showCopied ? 'COPIED!' : 'SHARE RESULT'}
+              </button>
             </div>
           </div>
         )}
@@ -583,9 +579,9 @@ export default function App() {
             <History size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
           </button>
 
-          {isSolved ? (
+          {isSolved || attempts.length >= 6 ? (
             <button
-              onClick={() => setShowModal(true)}
+              onClick={() => isSolved ? setShowModal(true) : setShowFailureModal(true)}
               style={{ fontSize: 'calc(var(--s)*0.5)' }}
               className="font-black text-cyan-400 underline decoration-4 underline-offset-8"
             >
