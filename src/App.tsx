@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, Share2, HelpCircle } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, Share2, HelpCircle, History } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore/lite';
 import { db } from './firebase';
 import { Grid, Move, Attempt, Feedback, GameState, MoveType } from './types';
@@ -17,6 +17,7 @@ export default function App() {
   const [showModal, setShowModal] = useState(false);
   const [showFailureModal, setShowFailureModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [lastMoveType, setLastMoveType] = useState<MoveType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -26,14 +27,14 @@ export default function App() {
   const [currentAttemptFeedback, setCurrentAttemptFeedback] = useState<Feedback[]>([]);
   const [showCopied, setShowCopied] = useState(false);
 
-  const startNewGame = useCallback(async () => {
+  const startNewGame = useCallback(async (targetDate?: string) => {
     setIsLoading(true);
     let puzzleData: any = null;
     
     const now = new Date();
     const offset = now.getTimezoneOffset();
     const localDate = new Date(now.getTime() - (offset * 60 * 1000));
-    const today = localDate.toISOString().slice(0, 10);
+    const today = targetDate || localDate.toISOString().slice(0, 10);
     
     try {
       const snap = await getDoc(doc(db, 'puzzles', today));
@@ -72,21 +73,39 @@ export default function App() {
       setSolution(finalSolution);
       setInitialGrid(scrambledGrid.map(r => [...r]));
 
-      const savedStateStr = localStorage.getItem('wordwrap_game_state');
+      // 1. Try date-specific key
+      const dateKey = `wordwrap_game_state_${today}`;
+      let savedStateStr = localStorage.getItem(dateKey);
+
+      // 2. Fallback to legacy key (migration)
+      if (!savedStateStr) {
+        const legacyStateStr = localStorage.getItem('wordwrap_game_state');
+        if (legacyStateStr) {
+          try {
+            const legacyState: GameState = JSON.parse(legacyStateStr);
+            if (legacyState.levelId === today) {
+              savedStateStr = legacyStateStr;
+              // Clean up legacy key
+              localStorage.removeItem('wordwrap_game_state');
+            }
+          } catch (e) {
+            console.error("Error parsing legacy state:", e);
+          }
+        }
+      }
+
       let loaded = false;
       if (savedStateStr) {
         try {
           const savedState: GameState = JSON.parse(savedStateStr);
-          if (savedState.levelId === today) {
-            setGrid(savedState.grid);
-            setAttempts(savedState.attempts);
-            setCurrentAttemptMoves(savedState.currentAttemptMoves);
-            setCurrentAttemptFeedback(savedState.currentAttemptFeedback);
-            setMovesRemaining(savedState.movesRemaining);
-            setIsSolved(savedState.isSolved);
-            setLastMoveType(savedState.lastMoveType);
-            loaded = true;
-          }
+          setGrid(savedState.grid);
+          setAttempts(savedState.attempts);
+          setCurrentAttemptMoves(savedState.currentAttemptMoves);
+          setCurrentAttemptFeedback(savedState.currentAttemptFeedback);
+          setMovesRemaining(savedState.movesRemaining);
+          setIsSolved(savedState.isSolved);
+          setLastMoveType(savedState.lastMoveType);
+          loaded = true;
         } catch (e) {
           console.error("Error parsing saved state:", e);
         }
@@ -130,7 +149,7 @@ export default function App() {
       lastMoveType
     };
 
-    localStorage.setItem('wordwrap_game_state', JSON.stringify(state));
+    localStorage.setItem(`wordwrap_game_state_${levelId}`, JSON.stringify(state));
   }, [levelId, grid, attempts, currentAttemptMoves, currentAttemptFeedback, movesRemaining, isSolved, lastMoveType, isLoading]);
 
   const shiftArray = (arr: string[], dir: number) => {
@@ -250,6 +269,37 @@ export default function App() {
     setTimeout(() => setShowCopied(false), 2000);
   };
 
+  const archivePuzzles = useMemo(() => {
+    if (!showArchiveModal) return [];
+
+    const puzzles = [];
+    const now = new Date();
+    const offset = now.getTimezoneOffset();
+    const localDate = new Date(now.getTime() - (offset * 60 * 1000));
+    const todayStr = localDate.toISOString().slice(0, 10);
+
+    const start = new Date(LAUNCH_DATE);
+    const end = new Date(todayStr + 'T00:00:00Z');
+
+    let current = new Date(end);
+    while (current >= start) {
+      const dateStr = current.toISOString().slice(0, 10);
+      const pNum = Math.floor((current.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+      const savedStateStr = localStorage.getItem(`wordwrap_game_state_${dateStr}`);
+      let isSolvedForDate = false;
+      if (savedStateStr) {
+        try {
+          isSolvedForDate = JSON.parse(savedStateStr).isSolved;
+        } catch (e) {}
+      }
+
+      puzzles.push({ date: dateStr, number: pNum, isSolved: isSolvedForDate });
+      current.setDate(current.getDate() - 1);
+    }
+    return puzzles;
+  }, [showArchiveModal, levelId, isSolved]);
+
   const ICON_SIZE = 'calc(var(--s) * 0.45)';
   const canShowModal = (isSolved && showModal) || (!isSolved && showFailureModal);
 
@@ -368,6 +418,55 @@ export default function App() {
           </div>
         </div>
 
+        {/* ARCHIVE MODAL */}
+        {showArchiveModal && (
+          <div className="absolute inset-0 z-[100] flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
+            <button onClick={() => setShowArchiveModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+              <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+            </button>
+            <div className="flex flex-col h-full w-full max-w-sm p-6">
+              <h2 className="text-3xl font-black mb-4 text-white uppercase text-center shrink-0">Archive</h2>
+
+              <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-2 pb-6">
+                <button
+                  onClick={() => {
+                    startNewGame();
+                    setShowArchiveModal(false);
+                  }}
+                  className="w-full flex items-center justify-between p-4 rounded-xl bg-blue-600/20 border border-blue-500/30 hover:bg-blue-600/30 transition-all text-blue-400 font-bold mb-4"
+                >
+                  <span>Back to Today</span>
+                  <ChevronRight size={20} />
+                </button>
+
+                {archivePuzzles.map((p) => (
+                  <button
+                    key={p.date}
+                    onClick={() => {
+                      startNewGame(p.date);
+                      setShowArchiveModal(false);
+                    }}
+                    className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all
+                      ${levelId === p.date
+                        ? 'bg-slate-700 border-blue-500'
+                        : 'bg-slate-800/50 border-slate-700 hover:border-slate-500'}`}
+                  >
+                    <div className="flex flex-col items-start">
+                      <span className="text-xs font-black uppercase tracking-widest text-slate-500">Puzzle #{p.number}</span>
+                      <span className="text-white font-bold">{new Date(p.date + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                    </div>
+                    {p.isSolved && (
+                      <div className="bg-green-500/20 p-1.5 rounded-full">
+                        <Trophy size={16} className="text-green-500" />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* HOW TO PLAY MODAL */}
         {showHelpModal && (
           <div className="absolute inset-0 z-[100] flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
@@ -476,6 +575,14 @@ export default function App() {
 
       <footer className="mt-[calc(var(--s)*0.4)] text-center min-h-[calc(var(--s)*1.2)] flex flex-col items-center justify-start">
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowArchiveModal(true)}
+            className="flex items-center justify-center p-2 rounded-xl bg-slate-800/50 border border-slate-700/50 text-slate-400 hover:text-white transition-all shadow-inner hover:scale-105 active:scale-95"
+            aria-label="Archive"
+          >
+            <History size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+          </button>
+
           {isSolved ? (
             <button
               onClick={() => setShowModal(true)}
@@ -518,7 +625,7 @@ export default function App() {
             className="flex items-center justify-center p-2 rounded-xl bg-slate-800/50 border border-slate-700/50 text-slate-400 hover:text-white transition-all shadow-inner hover:scale-105 active:scale-95"
             aria-label="How to play"
           >
-            <HelpCircle size={32} style={{ width: 'calc(var(--s)*0.5)', height: 'calc(var(--s)*0.5)' }} />
+            <HelpCircle size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
           </button>
         </div>
 
