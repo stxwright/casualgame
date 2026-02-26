@@ -314,24 +314,26 @@ export default function App() {
     <main className="relative flex h-screen w-screen flex-col items-center justify-center bg-slate-900 p-4 select-none overflow-hidden">
       
       <header 
-        className="mb-[calc(var(--s)*0.4)] text-center relative z-[110]"
+        className="mb-[calc(var(--s)*0.4)] text-center relative"
         style={{ width: 'calc(var(--s)*4 + var(--gap)*3 + var(--board-padding)*2)' }}
       >
         <h1 style={{ fontSize: 'calc(var(--s)*0.85)' }} className="font-black tracking-tight leading-none">
           <span className="text-white">Word</span>
           <span className="text-blue-400">Wrap</span>
         </h1>
-        <p style={{ fontSize: 'calc(var(--s)*0.25)' }} className="text-slate-300 font-medium italic mt-1">4 words across, 4 words down</p>
       </header>
 
-      <div 
-        className="relative bg-slate-700 rounded-[calc(var(--s)*0.4)] border border-slate-600 shadow-2xl"
-        style={{ 
-          padding: 'var(--board-padding)',
-          width: 'calc(var(--s)*4 + var(--gap)*3 + var(--board-padding)*2)',
-          height: 'calc(var(--s)*4 + var(--gap)*3 + var(--board-padding)*2)'
-        }}
-      >
+      <div className="relative flex flex-col items-center">
+        <p style={{ fontSize: 'calc(var(--s)*0.25)' }} className="text-slate-300 font-medium italic mb-4">4 words across, 4 words down</p>
+
+        <div
+          className="relative bg-slate-700 rounded-[calc(var(--s)*0.4)] border border-slate-600 shadow-2xl"
+          style={{
+            padding: 'var(--board-padding)',
+            width: 'calc(var(--s)*4 + var(--gap)*3 + var(--board-padding)*2)',
+            height: 'calc(var(--s)*4 + var(--gap)*3 + var(--board-padding)*2)'
+          }}
+        >
         {isLoading && (
           <div className="absolute inset-0 z-[60] flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/50 backdrop-blur-sm">
             <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
@@ -492,14 +494,14 @@ export default function App() {
 
       {/* ARCHIVE MODAL */}
       {showArchiveModal && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex justify-center animate-in fade-in duration-300">
-          <button onClick={() => setShowArchiveModal(false)} aria-label="Close" className="absolute top-6 left-6 text-slate-400 hover:text-white transition-colors z-[120]">
+        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-slate-900/95 backdrop-blur-sm animate-in fade-in duration-300">
+          <button onClick={() => setShowArchiveModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
             <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
           </button>
-          <div className="w-full max-w-md flex flex-col items-center pt-28 pb-12 px-8 h-full overflow-hidden">
+          <div className="flex flex-col h-full w-full max-w-sm p-6">
             <h2 className="text-3xl font-black mb-4 text-white uppercase text-center shrink-0">Archive</h2>
 
-            <div className="w-full flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-2 pb-6">
+            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-2 pb-6">
               <button
                 onClick={() => {
                   startNewGame();
@@ -541,11 +543,11 @@ export default function App() {
 
       {/* HOW TO PLAY MODAL */}
       {showHelpModal && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex justify-center animate-in fade-in duration-300">
-          <button onClick={() => setShowHelpModal(false)} aria-label="Close" className="absolute top-6 left-6 text-slate-400 hover:text-white transition-colors z-[120]">
+        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-slate-900/95 backdrop-blur-sm animate-in fade-in duration-300">
+          <button onClick={() => setShowHelpModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
             <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
           </button>
-          <div className="w-full max-w-md flex flex-col items-center pt-28 pb-12 px-8 overflow-y-auto custom-scrollbar h-full text-center">
+          <div className="text-center p-6 w-full max-w-sm overflow-y-auto max-h-full custom-scrollbar">
             <h2 className="text-3xl font-black mb-4 text-white uppercase">How to Play</h2>
 
             <div className="text-left space-y-4 text-slate-300 text-sm pb-4">
@@ -592,15 +594,15 @@ export default function App() {
 
       {/* WIN/LOSE MODAL */}
       {canShowModal && (
-        <div className="fixed inset-0 z-[100] bg-slate-900/95 backdrop-blur-sm flex justify-center animate-in fade-in duration-300">
+        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-slate-900/95 backdrop-blur-sm animate-in fade-in duration-300">
           <button
             onClick={() => { setShowModal(false); setShowFailureModal(false); }}
             aria-label="Close"
-            className="absolute top-6 left-6 text-slate-400 hover:text-white transition-colors z-[120]"
+            className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
           >
             <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
           </button>
-          <div className="w-full max-w-md flex flex-col items-center pt-28 pb-12 px-8 overflow-y-auto custom-scrollbar h-full text-center">
+          <div className="text-center p-8 w-full max-w-sm overflow-y-auto max-h-full custom-scrollbar items-start">
             {isSolved ? (
               <>
                 <Trophy className="mx-auto mb-4 text-green-500 animate-bounce" size={64} />
@@ -632,6 +634,8 @@ export default function App() {
           </div>
         </div>
       )}
+
+      </div>
 
     </main>
   );
