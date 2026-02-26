@@ -435,169 +435,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* ARCHIVE MODAL */}
-        {showArchiveModal && (
-          <div className="absolute inset-0 z-[100] flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
-            <button onClick={() => setShowArchiveModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
-              <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
-            </button>
-            <div className="flex flex-col h-full w-full max-w-sm p-6">
-              <h2 className="text-3xl font-black mb-4 text-white uppercase text-center shrink-0">Archive</h2>
-
-              <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-2 pb-6">
-                <button
-                  onClick={() => {
-                    startNewGame();
-                    setShowArchiveModal(false);
-                  }}
-                  className="w-full flex items-center justify-between p-4 rounded-xl bg-blue-600/20 border border-blue-500/30 hover:bg-blue-600/30 transition-all text-blue-400 font-bold mb-4"
-                >
-                  <span>Back to Today</span>
-                  <ChevronRight size={20} />
-                </button>
-
-                {archivePuzzles.map((p) => (
-                  <button
-                    key={p.date}
-                    onClick={() => {
-                      startNewGame(p.date);
-                      setShowArchiveModal(false);
-                    }}
-                    className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all
-                      ${levelId === p.date
-                        ? 'bg-slate-700 border-blue-500'
-                        : 'bg-slate-800/50 border-slate-700 hover:border-slate-500'}`}
-                  >
-                    <div className="flex flex-col items-start">
-                      <span className="text-xs font-black uppercase tracking-widest text-slate-500">Puzzle #{p.number}</span>
-                      <span className="text-white font-bold">{new Date(p.date + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                    </div>
-                    {p.isSolved && (
-                      <div className="bg-green-500/20 p-1.5 rounded-full">
-                        <Trophy size={16} className="text-green-500" />
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* HOW TO PLAY MODAL */}
-        {showHelpModal && (
-          <div className="absolute inset-0 z-[100] flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
-            <button onClick={() => setShowHelpModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
-              <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
-            </button>
-            <div className="text-center p-6 w-full max-w-sm overflow-y-auto max-h-full custom-scrollbar">
-              <h2 className="text-3xl font-black mb-4 text-white uppercase">How to Play</h2>
-
-              <div className="text-left space-y-4 text-slate-300 text-sm pb-4">
-                <p>Shift rows and columns to arrange letters into <span className="text-white font-bold">4 words across</span> and <span className="text-white font-bold">4 words down</span>.</p>
-
-                <div>
-                  <h3 className="text-blue-400 font-bold uppercase text-xs mb-1">Controls</h3>
-                  <p>Use the arrows around the grid to shift a row or column by one space. You cannot shift the same type (row or column) twice in a row.</p>
-                </div>
-
-                <div>
-                  <h3 className="text-blue-400 font-bold uppercase text-xs mb-1">Attempts</h3>
-                  <p>Each attempt consists of <span className="text-white font-bold">2 moves</span>. You have <span className="text-white font-bold">6 attempts</span> total. If the puzzle isn't solved after 2 moves, the grid resets for your next attempt.</p>
-                </div>
-
-                <div>
-                  <h3 className="text-blue-400 font-bold uppercase text-xs mb-1">Feedback</h3>
-                  <div className="space-y-2 mt-2">
-                    <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded bg-green-500 shrink-0" />
-                      <span><span className="text-green-500 font-bold">Correct:</span> This move is part of the solution.</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded bg-yellow-500 shrink-0" />
-                      <span><span className="text-yellow-500 font-bold">Partial:</span> Right row/column, wrong direction.</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded bg-red-500 shrink-0" />
-                      <span><span className="text-red-500 font-bold">Incorrect:</span> This row/column does not need shifting.</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setShowHelpModal(false)}
-                className="mt-8 w-full rounded-xl bg-blue-600 py-3 text-lg font-bold hover:bg-blue-500 shadow-xl text-white transition-all active:scale-95"
-              >
-                GOT IT!
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* WIN/LOSE MODAL */}
-        {canShowModal && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
-            <button onClick={() => isSolved ? setShowModal(false) : setShowFailureModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
-              <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
-            </button>
-            <div className="text-center p-8 w-full max-w-sm">
-              {isSolved ? (
-                <>
-                  <Trophy className="mx-auto mb-4 text-green-500 animate-bounce" size={64} />
-                  <h2 className="text-4xl font-black mb-2 text-white">SOLVED!</h2>
-                  <p className="text-slate-400 mb-6 font-bold">In {attempts.length} {attempts.length === 1 ? 'attempt' : 'attempts'}</p>
-                  
-                  <div className="flex flex-col gap-1 mb-8 items-center">
-                    {attempts.map((a, i) => (
-                      <div key={i} className="flex gap-1">
-                        {a.feedback.map((f, j) => (
-                          <div key={j} className={`w-8 h-8 rounded-sm ${f === 'correct' ? 'bg-green-500' : f === 'partial' ? 'bg-yellow-500' : 'bg-red-500'}`} />
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-
-                  <button onClick={shareResult} className="flex items-center justify-center gap-2 w-full rounded-xl bg-blue-600 py-4 text-xl font-bold hover:bg-blue-500 shadow-xl text-white transition-all active:scale-95">
-                    <Share2 size={24} />
-                    {showCopied ? 'COPIED!' : 'SHARE RESULT'}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <h2 className="text-4xl font-black text-red-400 mb-2 uppercase leading-tight">FAILED</h2>
-                  <p className="text-slate-400 mb-6 font-bold">The solution was:</p>
-                  
-                  {/* Reveal Solution */}
-                  <div className="grid grid-cols-4 gap-1 mb-6 mx-auto w-fit">
-                    {solution?.map((row, r) => row.map((char, c) => (
-                      <div key={`${r}-${c}`} className="w-8 h-8 bg-green-700 text-white flex items-center justify-center font-bold text-xs rounded-sm">
-                        {char}
-                      </div>
-                    )))}
-                  </div>
-
-                  {/* Solution Moves */}
-                  <div className="mb-8">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Required Moves</p>
-                    <div className="flex flex-col gap-1.5 items-center">
-                      {requiredMoves.map((m, i) => (
-                        <span key={i} className="text-white font-bold bg-slate-800 px-4 py-1.5 rounded-xl border border-slate-700 text-sm shadow-inner">
-                          {formatMove(m)}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <button onClick={shareResult} className="flex items-center justify-center gap-2 w-full rounded-xl bg-slate-700 py-4 text-xl font-bold hover:bg-slate-600 shadow-xl text-white mb-4 transition-all active:scale-95">
-                    <Share2 size={24} />
-                    {showCopied ? 'COPIED!' : 'SHARE RESULT'}
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       <footer className="mt-[calc(var(--s)*0.4)] text-center min-h-[calc(var(--s)*1.2)] flex flex-col items-center justify-start">
@@ -660,6 +497,170 @@ export default function App() {
           Puzzle #{puzzleNumber}
         </div>
       </footer>
+
+      {/* ARCHIVE MODAL */}
+      {showArchiveModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
+          <button onClick={() => setShowArchiveModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+            <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+          </button>
+          <div className="flex flex-col h-full w-full max-w-sm p-6">
+            <h2 className="text-3xl font-black mb-4 text-white uppercase text-center shrink-0">Archive</h2>
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-2 pb-6">
+              <button
+                onClick={() => {
+                  startNewGame();
+                  setShowArchiveModal(false);
+                }}
+                className="w-full flex items-center justify-between p-4 rounded-xl bg-blue-600/20 border border-blue-500/30 hover:bg-blue-600/30 transition-all text-blue-400 font-bold mb-4"
+              >
+                <span>Back to Today</span>
+                <ChevronRight size={20} />
+              </button>
+
+              {archivePuzzles.map((p) => (
+                <button
+                  key={p.date}
+                  onClick={() => {
+                    startNewGame(p.date);
+                    setShowArchiveModal(false);
+                  }}
+                  className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all
+                    ${levelId === p.date
+                      ? 'bg-slate-700 border-blue-500'
+                      : 'bg-slate-800/50 border-slate-700 hover:border-slate-500'}`}
+                >
+                  <div className="flex flex-col items-start">
+                    <span className="text-xs font-black uppercase tracking-widest text-slate-500">Puzzle #{p.number}</span>
+                    <span className="text-white font-bold">{new Date(p.date + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                  </div>
+                  {p.isSolved && (
+                    <div className="bg-green-500/20 p-1.5 rounded-full">
+                      <Trophy size={16} className="text-green-500" />
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* HOW TO PLAY MODAL */}
+      {showHelpModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
+          <button onClick={() => setShowHelpModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+            <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+          </button>
+          <div className="text-center p-6 w-full max-w-sm overflow-y-auto max-h-full custom-scrollbar">
+            <h2 className="text-3xl font-black mb-4 text-white uppercase">How to Play</h2>
+
+            <div className="text-left space-y-4 text-slate-300 text-sm pb-4">
+              <p>Shift rows and columns to arrange letters into <span className="text-white font-bold">4 words across</span> and <span className="text-white font-bold">4 words down</span>.</p>
+
+              <div>
+                <h3 className="text-blue-400 font-bold uppercase text-xs mb-1">Controls</h3>
+                <p>Use the arrows around the grid to shift a row or column by one space. You cannot shift the same type (row or column) twice in a row.</p>
+              </div>
+
+              <div>
+                <h3 className="text-blue-400 font-bold uppercase text-xs mb-1">Attempts</h3>
+                <p>Each attempt consists of <span className="text-white font-bold">2 moves</span>. You have <span className="text-white font-bold">6 attempts</span> total. If the puzzle isn't solved after 2 moves, the grid resets for your next attempt.</p>
+              </div>
+
+              <div>
+                <h3 className="text-blue-400 font-bold uppercase text-xs mb-1">Feedback</h3>
+                <div className="space-y-2 mt-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded bg-green-500 shrink-0" />
+                    <span><span className="text-green-500 font-bold">Correct:</span> This move is part of the solution.</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded bg-yellow-500 shrink-0" />
+                    <span><span className="text-yellow-500 font-bold">Partial:</span> Right row/column, wrong direction.</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded bg-red-500 shrink-0" />
+                    <span><span className="text-red-500 font-bold">Incorrect:</span> This row/column does not need shifting.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowHelpModal(false)}
+              className="mt-8 w-full rounded-xl bg-blue-600 py-3 text-lg font-bold hover:bg-blue-500 shadow-xl text-white transition-all active:scale-95"
+            >
+              GOT IT!
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* WIN/LOSE MODAL */}
+      {canShowModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
+          <button onClick={() => isSolved ? setShowModal(false) : setShowFailureModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+            <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
+          </button>
+          <div className="text-center p-8 w-full max-w-sm max-h-full overflow-y-auto custom-scrollbar">
+            {isSolved ? (
+              <>
+                <Trophy className="mx-auto mb-4 text-green-500 animate-bounce" size={64} />
+                <h2 className="text-4xl font-black mb-2 text-white">SOLVED!</h2>
+                <p className="text-slate-400 mb-6 font-bold">In {attempts.length} {attempts.length === 1 ? 'attempt' : 'attempts'}</p>
+
+                <div className="flex flex-col gap-1 mb-8 items-center">
+                  {attempts.map((a, i) => (
+                    <div key={i} className="flex gap-1">
+                      {a.feedback.map((f, j) => (
+                        <div key={j} className={`w-8 h-8 rounded-sm ${f === 'correct' ? 'bg-green-500' : f === 'partial' ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+
+                <button onClick={shareResult} className="flex items-center justify-center gap-2 w-full rounded-xl bg-blue-600 py-4 text-xl font-bold hover:bg-blue-500 shadow-xl text-white transition-all active:scale-95">
+                  <Share2 size={24} />
+                  {showCopied ? 'COPIED!' : 'SHARE RESULT'}
+                </button>
+              </>
+            ) : (
+              <>
+                <h2 className="text-4xl font-black text-red-400 mb-2 uppercase leading-tight">FAILED</h2>
+                <p className="text-slate-400 mb-6 font-bold">The solution was:</p>
+
+                {/* Reveal Solution */}
+                <div className="grid grid-cols-4 gap-1 mb-6 mx-auto w-fit">
+                  {solution?.map((row, r) => row.map((char, c) => (
+                    <div key={`${r}-${c}`} className="w-8 h-8 bg-green-700 text-white flex items-center justify-center font-bold text-xs rounded-sm">
+                      {char}
+                    </div>
+                  )))}
+                </div>
+
+                {/* Solution Moves */}
+                <div className="mb-8">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Required Moves</p>
+                  <div className="flex flex-col gap-1.5 items-center">
+                    {requiredMoves.map((m, i) => (
+                      <span key={i} className="text-white font-bold bg-slate-800 px-4 py-1.5 rounded-xl border border-slate-700 text-sm shadow-inner">
+                        {formatMove(m)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <button onClick={shareResult} className="flex items-center justify-center gap-2 w-full rounded-xl bg-slate-700 py-4 text-xl font-bold hover:bg-slate-600 shadow-xl text-white mb-4 transition-all active:scale-95">
+                  <Share2 size={24} />
+                  {showCopied ? 'COPIED!' : 'SHARE RESULT'}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
     </main>
   );
