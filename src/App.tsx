@@ -427,7 +427,6 @@ export default function App() {
           </div>
         </div>
 
-
       </div>
 
       <footer className="mt-[calc(var(--s)*0.4)] text-center min-h-[calc(var(--s)*1.2)] flex flex-col items-center justify-start relative z-10">
@@ -494,8 +493,8 @@ export default function App() {
 
       {/* ARCHIVE MODAL */}
       {showArchiveModal && (
-        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-slate-900/95 backdrop-blur-sm animate-in fade-in duration-300">
-          <button onClick={() => setShowArchiveModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+        <div className="absolute inset-0 z-[100] flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
+          <button onClick={() => setShowArchiveModal(false)} aria-label="Close" className="absolute top-4 left-4 text-slate-400 hover:text-white transition-colors">
             <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
           </button>
           <div className="flex flex-col h-full w-full max-w-sm p-6">
@@ -543,8 +542,8 @@ export default function App() {
 
       {/* HOW TO PLAY MODAL */}
       {showHelpModal && (
-        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-slate-900/95 backdrop-blur-sm animate-in fade-in duration-300">
-          <button onClick={() => setShowHelpModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors">
+        <div className="absolute inset-0 z-[100] flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
+          <button onClick={() => setShowHelpModal(false)} aria-label="Close" className="absolute top-4 left-4 text-slate-400 hover:text-white transition-colors">
             <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
           </button>
           <div className="text-center p-6 w-full max-w-sm overflow-y-auto max-h-full custom-scrollbar">
@@ -594,41 +593,41 @@ export default function App() {
 
       {/* WIN/LOSE MODAL */}
       {canShowModal && (
-        <div className="absolute inset-0 z-[100] flex items-center justify-center bg-slate-900/95 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="absolute inset-0 z-[100] flex items-center justify-center rounded-[calc(var(--s)*0.4)] bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
           <button
             onClick={() => { setShowModal(false); setShowFailureModal(false); }}
             aria-label="Close"
-            className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+            className="absolute top-4 left-4 text-slate-400 hover:text-white transition-colors"
           >
             <X size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
           </button>
-          <div className="text-center p-8 w-full max-w-sm overflow-y-auto max-h-full custom-scrollbar items-start">
+          <div className="text-center p-6 w-full max-w-sm overflow-y-auto max-h-full custom-scrollbar">
             {isSolved ? (
               <>
-                <Trophy className="mx-auto mb-4 text-green-500 animate-bounce" size={64} />
-                <h2 className="text-4xl font-black mb-2 text-white">SOLVED!</h2>
-                <p className="text-slate-400 mb-6 font-bold">In {attempts.length} {attempts.length === 1 ? 'attempt' : 'attempts'}</p>
+                <Trophy className="mx-auto mb-2 text-green-500 animate-bounce" size={40} />
+                <h2 className="text-2xl font-black mb-1 text-white">SOLVED!</h2>
+                <p className="text-slate-400 mb-3 font-bold text-xs">In {attempts.length} {attempts.length === 1 ? 'attempt' : 'attempts'}</p>
               </>
             ) : (
               <>
-                <XCircle className="mx-auto mb-4 text-red-400" size={64} />
-                <h2 className="text-4xl font-black text-white mb-2 uppercase leading-tight">FAILED</h2>
-                <p className="text-slate-400 mb-6 font-bold">Better luck tomorrow!</p>
+                <XCircle className="mx-auto mb-2 text-red-400" size={40} />
+                <h2 className="text-2xl font-black text-white mb-1 uppercase leading-tight">FAILED</h2>
+                <p className="text-slate-400 mb-3 font-bold text-xs">Better luck tomorrow!</p>
               </>
             )}
 
-            <div className="flex flex-col gap-1 mb-8 items-center">
+            <div className="flex flex-col gap-1 mb-5 items-center">
               {attempts.map((a, i) => (
                 <div key={i} className="flex gap-1">
                   {a.feedback.map((f, j) => (
-                    <div key={j} className={`w-8 h-8 rounded-sm ${f === 'correct' ? 'bg-green-500' : f === 'partial' ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                    <div key={j} className={`w-5 h-5 rounded-sm ${f === 'correct' ? 'bg-green-500' : f === 'partial' ? 'bg-yellow-500' : 'bg-red-500'}`} />
                   ))}
                 </div>
               ))}
             </div>
 
-            <button onClick={shareResult} className="flex items-center justify-center gap-2 w-full rounded-xl bg-blue-600 py-4 text-xl font-bold hover:bg-blue-500 shadow-xl text-white transition-all active:scale-95">
-              <Share2 size={24} />
+            <button onClick={shareResult} className="flex items-center justify-center gap-2 w-full rounded-xl bg-blue-600 py-2.5 text-base font-bold hover:bg-blue-500 shadow-xl text-white transition-all active:scale-95">
+              <Share2 size={18} />
               {showCopied ? 'COPIED!' : 'SHARE RESULT'}
             </button>
           </div>
