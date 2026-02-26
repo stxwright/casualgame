@@ -254,7 +254,7 @@ export default function App() {
   const canShowModal = (isSolved && showModal) || (!isSolved && showFailureModal);
 
   return (
-    <main className="flex h-screen w-screen flex-col items-center justify-center bg-slate-900 p-4 select-none overflow-hidden">
+    <main className="relative flex h-screen w-screen flex-col items-center justify-center bg-slate-900 p-4 select-none overflow-hidden">
       
       <header 
         className="mb-[calc(var(--s)*0.4)] text-center relative"
@@ -514,7 +514,7 @@ export default function App() {
 
       <button
         onClick={() => setShowHelpModal(true)}
-        className="absolute bottom-6 right-6 text-slate-400 hover:text-white transition-colors"
+        className="fixed bottom-6 right-6 p-2 rounded-full bg-slate-800/50 hover:bg-slate-700/50 text-slate-400 hover:text-white transition-all shadow-lg backdrop-blur-sm border border-slate-700/50"
         aria-label="How to play"
       >
         <HelpCircle size={32} style={{ width: 'calc(var(--s)*0.5)', height: 'calc(var(--s)*0.5)' }} />
