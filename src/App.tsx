@@ -370,10 +370,10 @@ export default function App() {
       </div>
 
       <footer className="mt-[calc(var(--s)*0.4)] text-center min-h-[calc(var(--s)*1.2)] flex flex-col items-center justify-start">
-        {isSolved ? (
-          !showModal && (
+        {(isSolved || attempts.length >= 6) ? (
+          (!showModal && !showFailureModal) && (
             <button
-              onClick={() => setShowModal(true)}
+              onClick={() => isSolved ? setShowModal(true) : setShowFailureModal(true)}
               style={{ fontSize: 'calc(var(--s)*0.5)' }}
               className="font-black text-cyan-400 underline decoration-4 underline-offset-8"
             >
@@ -419,15 +419,13 @@ export default function App() {
       {canShowModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/95 backdrop-blur-sm animate-in fade-in zoom-in duration-300">
           <div className="relative bg-slate-800 rounded-3xl border border-slate-700 shadow-2xl mx-4">
-            {isSolved && (
-              <button
-                onClick={() => setShowModal(false)}
-                aria-label="Close"
-                className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-10"
-              >
-                <X size={32}/>
-              </button>
-            )}
+            <button
+              onClick={() => { setShowModal(false); setShowFailureModal(false); }}
+              aria-label="Close"
+              className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-10"
+            >
+              <X size={32}/>
+            </button>
             <div className="text-center p-8 w-full max-w-sm">
               {isSolved ? (
                 <>
@@ -445,7 +443,7 @@ export default function App() {
                     ))}
                   </div>
 
-                  <button onClick={shareResult} className="flex items-center justify-center gap-2 w-full rounded-xl bg-blue-600 py-4 text-xl font-bold hover:bg-blue-500 shadow-xl text-white transition-all active:scale-95">
+                  <button onClick={shareResult} className="flex items-center justify-center gap-2 w-auto mx-auto rounded-xl bg-blue-600 py-4 px-12 text-xl font-bold hover:bg-blue-500 shadow-xl text-white transition-all active:scale-95">
                     <Share2 size={24} />
                     {showCopied ? 'COPIED!' : 'SHARE RESULT'}
                   </button>
@@ -464,7 +462,7 @@ export default function App() {
                     )))}
                   </div>
 
-                  <button onClick={shareResult} className="flex items-center justify-center gap-2 w-full rounded-xl bg-slate-700 py-4 text-xl font-bold hover:bg-slate-600 shadow-xl text-white mb-4 transition-all active:scale-95">
+                  <button onClick={shareResult} className="flex items-center justify-center gap-2 w-auto mx-auto rounded-xl bg-slate-700 py-4 px-12 text-xl font-bold hover:bg-slate-600 shadow-xl text-white mb-4 transition-all active:scale-95">
                     <Share2 size={24} />
                     {showCopied ? 'COPIED!' : 'SHARE RESULT'}
                   </button>
