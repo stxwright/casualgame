@@ -117,14 +117,6 @@ export default function App() {
   useEffect(() => { startNewGame(); }, [startNewGame]);
 
   useEffect(() => {
-    const hasSeenHelp = localStorage.getItem('wordwrap_help_seen');
-    if (!hasSeenHelp) {
-      setShowHelpModal(true);
-      localStorage.setItem('wordwrap_help_seen', 'true');
-    }
-  }, []);
-
-  useEffect(() => {
     if (levelId === 0 || isLoading) return;
 
     const state: GameState = {
@@ -273,13 +265,6 @@ export default function App() {
           <span className="text-blue-400">Wrap</span>
         </h1>
         <p style={{ fontSize: 'calc(var(--s)*0.25)' }} className="text-slate-300 font-medium italic mt-1">4 words across, 4 words down</p>
-        <button
-          onClick={() => setShowHelpModal(true)}
-          className="absolute -top-1 -right-2 p-2 text-slate-400 hover:text-white transition-colors"
-          aria-label="How to play"
-        >
-          <HelpCircle size={24} style={{ width: 'calc(var(--s)*0.45)', height: 'calc(var(--s)*0.45)' }} />
-        </button>
       </header>
 
       <div 
@@ -526,6 +511,14 @@ export default function App() {
           Puzzle #{puzzleNumber}
         </div>
       </footer>
+
+      <button
+        onClick={() => setShowHelpModal(true)}
+        className="absolute bottom-6 right-6 text-slate-400 hover:text-white transition-colors"
+        aria-label="How to play"
+      >
+        <HelpCircle size={32} style={{ width: 'calc(var(--s)*0.5)', height: 'calc(var(--s)*0.5)' }} />
+      </button>
 
     </main>
   );
