@@ -17,6 +17,13 @@
   .animate-tile-win {
     animation: tile-win 0.6s ease-in-out infinite;
   }
+  @keyframes tile-fail {
+    0%, 100% { transform: scale(1); background-color: var(--color-red-700); }
+    50% { transform: scale(1.02) rotate(-1deg); background-color: var(--color-red-600); }
+  }
+  .animate-tile-fail {
+    animation: tile-fail 0.6s ease-in-out infinite;
+  }
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
   }

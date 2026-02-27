@@ -310,6 +310,7 @@ export default function App() {
   const MODAL_SUBTITLE_SIZE = 'calc(var(--s) * 0.3)';
   const MODAL_GRID_SIZE = 'calc(var(--s) * 0.5)';
   const canShowModal = (isSolved && showModal) || (!isSolved && showFailureModal);
+  const isFailed = !isSolved && attempts.length >= 6;
 
   return (
     <main className="relative flex h-screen w-screen flex-col items-center justify-center bg-slate-900 p-4 select-none overflow-hidden">
@@ -379,11 +380,13 @@ export default function App() {
         <div className="grid grid-cols-4 grid-rows-4 gap-[var(--gap)] w-full h-full">
           {grid.map((row, r) => row.map((char, c) => (
             <div key={`${r}-${c}`}
-              style={{ width: 'var(--s)', height: 'var(--s)', fontSize: 'calc(var(--s) * 0.7)', animationDelay: isSolved ? `${(r*4+c)*100}ms` : '0ms' }}
+              style={{ width: 'var(--s)', height: 'var(--s)', fontSize: 'calc(var(--s) * 0.7)', animationDelay: (isSolved || isFailed) ? `${(r*4+c)*100}ms` : '0ms' }}
               className={`flex items-center justify-center font-bold rounded-[calc(var(--s)*0.15)]
-                ${isSolved ? 'bg-green-700 text-white animate-tile-win' : 'bg-slate-600 text-white shadow-[inset_0_calc(var(--s)*-0.08)_0_rgba(0,0,0,0.3)]'}`}
+                ${isSolved ? 'bg-green-700 text-white animate-tile-win' :
+                  isFailed ? 'bg-red-700 text-white animate-tile-fail' :
+                  'bg-slate-600 text-white shadow-[inset_0_calc(var(--s)*-0.08)_0_rgba(0,0,0,0.3)]'}`}
             >
-              <span style={{ transform: isSolved ? 'none' : 'translateY(-4%)' }}>
+              <span style={{ transform: (isSolved || isFailed) ? 'none' : 'translateY(-4%)' }}>
                 {char}
               </span>
             </div>
