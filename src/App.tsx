@@ -139,6 +139,13 @@ export default function App() {
   useEffect(() => { startNewGame(); }, [startNewGame]);
 
   useEffect(() => {
+    if (puzzleNumber > 0) {
+      const dateLabel = levelId ? new Date(levelId + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+      document.title = `WordWrap #${puzzleNumber}${dateLabel ? ` (${dateLabel})` : ''} — Daily Word Grid Puzzle Game | casualga.me`;
+    }
+  }, [puzzleNumber, levelId]);
+
+  useEffect(() => {
     if (levelId === 0 || isLoading) return;
 
     const state: GameState = {
