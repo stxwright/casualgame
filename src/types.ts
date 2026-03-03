@@ -25,3 +25,9 @@ export interface GameState {
   isSolved: boolean;
   lastMoveType: MoveType | null;
 }
+
+declare global {
+  interface Window {
+    ARCHIVE_DATE?: string;
+  }
+}

@@ -136,7 +136,12 @@ export default function App() {
     setIsLoading(false);
   }, []);
 
-  useEffect(() => { startNewGame(); }, [startNewGame]);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const puzzleParam = params.get('puzzle');
+    const targetDate = window.ARCHIVE_DATE || puzzleParam || undefined;
+    startNewGame(targetDate);
+  }, [startNewGame]);
 
   useEffect(() => {
     if (puzzleNumber > 0) {
