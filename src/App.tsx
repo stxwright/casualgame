@@ -7,6 +7,7 @@ import { Grid, Move, Attempt, Feedback, GameState, MoveType } from './types';
 const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
 
 export default function App() {
+  const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
   const [grid, setGrid] = useState<Grid>([[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' ']]);
   const [initialGrid, setInitialGrid] = useState<Grid | null>(null);
   const [solution, setSolution] = useState<Grid | null>(null);
@@ -34,7 +35,10 @@ export default function App() {
     const now = new Date();
     const offset = now.getTimezoneOffset();
     const localDate = new Date(now.getTime() - (offset * 60 * 1000));
-    const today = targetDate || localDate.toISOString().slice(0, 10);
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const puzzleParam = searchParams.get('puzzle');
+    const today = targetDate || puzzleParam || localDate.toISOString().slice(0, 10);
     
     try {
       const snap = await getDoc(doc(db, 'puzzles', today));
@@ -140,7 +144,7 @@ export default function App() {
 
   useEffect(() => {
     if (puzzleNumber > 0) {
-      const dateLabel = levelId ? new Date(levelId + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+      const dateLabel = levelId ? new Date(levelId + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
       document.title = `WordWrap #${puzzleNumber}${dateLabel ? ` (${dateLabel})` : ''} — Daily Word Grid Puzzle Game | casualga.me`;
     }
   }, [puzzleNumber, levelId]);
@@ -317,6 +321,10 @@ export default function App() {
   const MODAL_SUBTITLE_SIZE = 'calc(var(--s) * 0.3)';
   const MODAL_GRID_SIZE = 'calc(var(--s) * 0.5)';
   const canShowModal = (isSolved && showModal) || (!isSolved && showFailureModal);
+
+  if (currentPath === '/archive') {
+    return <ArchivePage launchDate={LAUNCH_DATE} />;
+  }
 
   return (
     <main className="relative flex h-screen w-screen flex-col items-center justify-center bg-slate-900 p-4 select-none overflow-hidden">
@@ -649,6 +657,86 @@ export default function App() {
         </div>
       )}
 
+    </main>
+  );
+}
+function ArchivePage({ launchDate }: { launchDate: Date }) {
+  const puzzles = useMemo(() => {
+    const list = [];
+    const today = new Date();
+    let cursor = new Date(launchDate);
+    while (cursor <= today) {
+      const dateStr = cursor.toISOString().slice(0, 10);
+      const number = Math.floor((new Date(dateStr + 'T00:00:00Z').getTime() - launchDate.getTime()) / 86400000) + 1;
+      const storageKey = `wordwrap_game_state_${dateStr}`;
+      let isSolved = false;
+      try {
+        const saved = localStorage.getItem(storageKey);
+        if (saved) isSolved = JSON.parse(saved).isSolved === true;
+      } catch {}
+      list.push({ date: dateStr, number, isSolved });
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+    }
+    return list.reverse();
+  }, [launchDate]);
+
+  useEffect(() => {
+    document.title = 'Puzzle Archive — WordWrap | casualga.me';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute('content', 'Browse and play past WordWrap puzzles. Challenge yourself with previous daily word grid games from the archive.');
+    }
+  }, []);
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  return (
+    <main className="min-h-screen w-full bg-slate-900 text-slate-100 flex flex-col items-center p-6 sm:p-12 font-sans">
+      <div className="w-full max-w-2xl">
+        <header className="mb-12 text-center">
+          <h1 className="text-4xl font-black tracking-tight mb-2">
+            <span className="text-white">Word</span>
+            <span className="text-blue-400">Wrap</span>
+            <span className="text-slate-500 ml-3 uppercase text-xl tracking-widest">Archive</span>
+          </h1>
+          <a href="/" className="text-blue-400 hover:text-blue-300 font-bold transition-colors inline-flex items-center gap-2 mt-4">
+            <ChevronLeft size={20} />
+            Back to Today's Puzzle
+          </a>
+        </header>
+
+        <div className="grid gap-4">
+          {puzzles.map((p) => (
+            <a
+              key={p.date}
+              href={p.date === todayStr ? '/' : `/?puzzle=${p.date}`}
+              className="flex items-center justify-between p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-blue-500/50 hover:bg-slate-800 transition-all group shadow-sm"
+            >
+              <div className="flex flex-col items-start">
+                <span className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-1">
+                  Puzzle #{p.number}
+                  {p.date === todayStr && <span className="ml-2 text-blue-500">(Today)</span>}
+                </span>
+                <span className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">
+                  {new Date(p.date + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </span>
+              </div>
+              <div className="flex items-center gap-4">
+                {p.isSolved && (
+                  <div className="bg-green-500/10 p-2 rounded-full border border-green-500/20">
+                    <Trophy size={20} className="text-green-500" />
+                  </div>
+                )}
+                <ChevronRight size={24} className="text-slate-600 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
+              </div>
+            </a>
+          ))}
+        </div>
+
+        <footer className="mt-16 text-center text-slate-500 text-sm pb-12">
+          &copy; {new Date().getFullYear()} casualga.me &bull; All puzzles generated daily
+        </footer>
+      </div>
     </main>
   );
 }

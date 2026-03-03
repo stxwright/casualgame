@@ -19,8 +19,9 @@ function seoPlugin() {
       const now = new Date();
       const dateStr = now.toISOString().slice(0, 10);
       const puzzleNumber = Math.floor((new Date(dateStr + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const formattedDate = new Date(dateStr + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-      const title = `WordWrap #${puzzleNumber} — Daily Word Grid Puzzle Game | casualga.me`;
+      const title = `WordWrap #${puzzleNumber} (${formattedDate}) — Daily Word Grid Puzzle Game | casualga.me`;
       const description = "Shift rows and columns to arrange letters into four words across and four words down in this daily word puzzle. Challenge yourself with a new Wordwrap grid every day!";
 
       const structuredData = {
@@ -87,10 +88,11 @@ function seoPlugin() {
 `;
 
       const staticShell = `
-      <div id="seo-content" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;">
+      <noscript>
         <h1>WordWrap #${puzzleNumber}</h1>
         <p>Today is ${new Date(dateStr + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
         <p>${description}</p>
+        <p><a href="/archive">View the Puzzle Archive</a></p>
         <h2>How to Play</h2>
         <ul>
           <li>Shift rows and columns to arrange letters into 4 words across and 4 words down.</li>
@@ -103,7 +105,7 @@ function seoPlugin() {
           <li><strong>Partial:</strong> Right row/column, wrong direction.</li>
           <li><strong>Incorrect:</strong> This row/column does not need shifting.</li>
         </ul>
-      </div>
+      </noscript>
 `;
 
       // Replace existing title and description if any, otherwise prepend to head
@@ -122,6 +124,19 @@ function seoPlugin() {
         const dateStr = now.toISOString().slice(0, 10);
         let sitemap = fs.readFileSync(sitemapPath, 'utf-8');
         sitemap = sitemap.replace(/<lastmod>.*?<\/lastmod>/g, `<lastmod>${dateStr}</lastmod>`);
+
+        // Add /archive/ to sitemap if not present
+        if (!sitemap.includes('https://casualga.me/archive/')) {
+          const archiveEntry = `
+<url>
+  <loc>https://casualga.me/archive/</loc>
+  <lastmod>${dateStr}</lastmod>
+  <changefreq>daily</changefreq>
+  <priority>0.8</priority>
+</url>`;
+          sitemap = sitemap.replace('</urlset>', `${archiveEntry}\n</urlset>`);
+        }
+
         fs.writeFileSync(sitemapPath, sitemap);
         console.log(`Updated sitemap.xml lastmod to ${dateStr}`);
       }
