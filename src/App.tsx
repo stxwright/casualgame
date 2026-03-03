@@ -34,7 +34,10 @@ export default function App() {
     const now = new Date();
     const offset = now.getTimezoneOffset();
     const localDate = new Date(now.getTime() - (offset * 60 * 1000));
-    const today = targetDate || localDate.toISOString().slice(0, 10);
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const puzzleParam = searchParams.get('puzzle');
+    const today = targetDate || puzzleParam || localDate.toISOString().slice(0, 10);
     
     try {
       const snap = await getDoc(doc(db, 'puzzles', today));
@@ -140,7 +143,7 @@ export default function App() {
 
   useEffect(() => {
     if (puzzleNumber > 0) {
-      const dateLabel = levelId ? new Date(levelId + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+      const dateLabel = levelId ? new Date(levelId + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
       document.title = `WordWrap #${puzzleNumber}${dateLabel ? ` (${dateLabel})` : ''} — Daily Word Grid Puzzle Game | casualga.me`;
     }
   }, [puzzleNumber, levelId]);
