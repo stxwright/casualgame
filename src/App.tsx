@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, Share2, HelpCircle, History } from 'lucide-react';
-import { doc, getDoc } from 'firebase/firestore/lite';
-import { db } from './firebase';
 import { Grid, Move, Attempt, Feedback, GameState, MoveType } from './types';
 
 const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
@@ -31,15 +29,21 @@ export default function App() {
     setIsLoading(true);
     let puzzleData: any = null;
     
+    // Check path for date (e.g. /2026-02-14)
+    const path = window.location.pathname.replace(/^\/|\/$/g, '');
+    const isDatePath = /^\d{4}-\d{2}-\d{2}$/.test(path);
+
     const now = new Date();
     const offset = now.getTimezoneOffset();
     const localDate = new Date(now.getTime() - (offset * 60 * 1000));
-    const today = targetDate || localDate.toISOString().slice(0, 10);
+    const todayDefault = localDate.toISOString().slice(0, 10);
+
+    const today = targetDate || (isDatePath ? path : todayDefault);
     
     try {
-      const snap = await getDoc(doc(db, 'puzzles', today));
-      if (snap.exists()) {
-        puzzleData = snap.data();
+      const response = await fetch(`/puzzles/${today}.json`);
+      if (response.ok) {
+        puzzleData = await response.json();
       } else {
         console.warn("No puzzle found for today:", today);
       }
@@ -48,10 +52,11 @@ export default function App() {
     }
 
     if (puzzleData) {
+      // Data format in JSON: solution is string[]
       const finalSolution: Grid = puzzleData.solution.map((row: string) => row.split(''));
       const finalScrambleMoves: {type: 'row' | 'col', idx: number, dir: number}[] = puzzleData.scrambleMoves;
       
-      const pNum = Math.floor((new Date(today + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const pNum = puzzleData.puzzleNumber || Math.floor((new Date(today + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
       setPuzzleNumber(pNum);
 
       const solMoves: Move[] = finalScrambleMoves.map(m => ({
@@ -136,7 +141,15 @@ export default function App() {
     setIsLoading(false);
   }, []);
 
-  useEffect(() => { startNewGame(); }, [startNewGame]);
+  useEffect(() => {
+    startNewGame();
+
+    const handlePopState = () => {
+      startNewGame();
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [startNewGame]);
 
   useEffect(() => {
     if (puzzleNumber > 0) {
@@ -523,6 +536,7 @@ export default function App() {
                 <button
                   key={p.date}
                   onClick={() => {
+                    window.history.pushState({}, '', `/${p.date}`);
                     startNewGame(p.date);
                     setShowArchiveModal(false);
                   }}

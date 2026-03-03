@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "FAST",
+    "INTO",
+    "SNAP",
+    "HATS"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "col",
+      "idx": 3,
+      "dir": 1
+    }
+  ],
+  "date": "2026-03-04",
+  "puzzleNumber": 19
+}
