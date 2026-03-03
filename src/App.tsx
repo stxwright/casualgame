@@ -7,7 +7,7 @@ import { Grid, Move, Attempt, Feedback, GameState, MoveType } from './types';
 const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
 
 export default function App() {
-  const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
+  const [currentPath, setCurrentPath] = useState(window.location.pathname.replace(/\/$/, '') || '/');
   const [grid, setGrid] = useState<Grid>([[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' ']]);
   const [initialGrid, setInitialGrid] = useState<Grid | null>(null);
   const [solution, setSolution] = useState<Grid | null>(null);
@@ -141,6 +141,26 @@ export default function App() {
   }, []);
 
   useEffect(() => { startNewGame(); }, [startNewGame]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname.replace(/\/$/, '') || '/');
+      startNewGame();
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [startNewGame]);
+
+  const navigateToPuzzle = useCallback((date?: string) => {
+    const url = new URL(window.location.origin);
+    if (date) {
+      url.searchParams.set('puzzle', date);
+    }
+    window.history.pushState({}, '', url.pathname + url.search);
+    setCurrentPath('/');
+    startNewGame(date);
+    setShowArchiveModal(false);
+  }, [startNewGame]);
 
   useEffect(() => {
     if (puzzleNumber > 0) {
@@ -323,7 +343,7 @@ export default function App() {
   const canShowModal = (isSolved && showModal) || (!isSolved && showFailureModal);
 
   if (currentPath === '/archive') {
-    return <ArchivePage launchDate={LAUNCH_DATE} />;
+    return <ArchivePage launchDate={LAUNCH_DATE} onNavigate={navigateToPuzzle} />;
   }
 
   return (
@@ -517,10 +537,7 @@ export default function App() {
 
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-2 pb-6">
               <button
-                onClick={() => {
-                  startNewGame();
-                  setShowArchiveModal(false);
-                }}
+                onClick={() => navigateToPuzzle()}
                 className="w-full flex items-center justify-between p-4 rounded-xl bg-blue-600/20 border border-blue-500/30 hover:bg-blue-600/30 transition-all text-blue-400 font-bold mb-4"
               >
                 <span>Back to Today</span>
@@ -528,27 +545,12 @@ export default function App() {
               </button>
 
               {archivePuzzles.map((p) => (
-                <button
+                <PuzzleEntry
                   key={p.date}
-                  onClick={() => {
-                    startNewGame(p.date);
-                    setShowArchiveModal(false);
-                  }}
-                  className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all
-                    ${levelId === p.date
-                      ? 'bg-slate-700 border-blue-500'
-                      : 'bg-slate-800/50 border-slate-700 hover:border-slate-500'}`}
-                >
-                  <div className="flex flex-col items-start">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Puzzle #{p.number}</span>
-                    <span className="text-white font-bold">{new Date(p.date + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                  </div>
-                  {p.isSolved && (
-                    <div className="bg-green-500/20 p-1.5 rounded-full">
-                      <Trophy size={16} className="text-green-500" />
-                    </div>
-                  )}
-                </button>
+                  p={p}
+                  isCurrent={levelId === p.date}
+                  onClick={() => navigateToPuzzle(p.date)}
+                />
               ))}
             </div>
           </div>
@@ -660,7 +662,55 @@ export default function App() {
     </main>
   );
 }
-function ArchivePage({ launchDate }: { launchDate: Date }) {
+function PuzzleEntry({ p, isCurrent, onClick, isLink }: { p: any, isCurrent?: boolean, onClick?: () => void, isLink?: boolean }) {
+  const content = (
+    <>
+      <div className="flex flex-col items-start text-left">
+        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Puzzle #{p.number}</span>
+        <span className="text-white font-bold">{new Date(p.date + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+      </div>
+      <div className="flex items-center gap-3">
+        {p.isSolved && (
+          <div className="bg-green-500/20 p-1.5 rounded-full">
+            <Trophy size={16} className="text-green-500" />
+          </div>
+        )}
+        <ChevronRight size={20} className="text-slate-600 group-hover:text-blue-400 transition-colors" />
+      </div>
+    </>
+  );
+
+  const className = `w-full flex items-center justify-between p-4 rounded-xl border transition-all group
+    ${isCurrent
+      ? 'bg-slate-700 border-blue-500'
+      : 'bg-slate-800/50 border-slate-700 hover:border-slate-500'}`;
+
+  if (isLink) {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    return (
+      <a
+        href={p.date === todayStr ? '/' : `/?puzzle=${p.date}`}
+        className={className}
+        onClick={(e) => {
+          if (onClick) {
+            e.preventDefault();
+            onClick();
+          }
+        }}
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <button onClick={onClick} className={className}>
+      {content}
+    </button>
+  );
+}
+
+function ArchivePage({ launchDate, onNavigate }: { launchDate: Date, onNavigate: (date?: string) => void }) {
   const puzzles = useMemo(() => {
     const list = [];
     const today = new Date();
@@ -691,50 +741,33 @@ function ArchivePage({ launchDate }: { launchDate: Date }) {
   const todayStr = new Date().toISOString().slice(0, 10);
 
   return (
-    <main className="min-h-screen w-full bg-slate-900 text-slate-100 flex flex-col items-center p-6 sm:p-12 font-sans">
-      <div className="w-full max-w-2xl">
+    <main className="min-h-screen w-full bg-slate-900 text-slate-100 flex flex-col items-center p-6 font-sans">
+      <div className="w-full max-w-lg">
         <header className="mb-12 text-center">
-          <h1 className="text-4xl font-black tracking-tight mb-2">
-            <span className="text-white">Word</span>
-            <span className="text-blue-400">Wrap</span>
-            <span className="text-slate-500 ml-3 uppercase text-xl tracking-widest">Archive</span>
-          </h1>
-          <a href="/" className="text-blue-400 hover:text-blue-300 font-bold transition-colors inline-flex items-center gap-2 mt-4">
+          <h2 style={{ fontSize: 'calc(var(--s) * 0.7)' }} className="font-black mb-4 text-white uppercase text-center shrink-0 leading-tight">Archive</h2>
+          <a
+            href="/"
+            className="text-blue-400 hover:text-blue-300 font-bold transition-colors inline-flex items-center gap-2 mt-4"
+            onClick={(e) => { e.preventDefault(); onNavigate(); }}
+          >
             <ChevronLeft size={20} />
             Back to Today's Puzzle
           </a>
         </header>
 
-        <div className="grid gap-4">
+        <div className="grid gap-2">
           {puzzles.map((p) => (
-            <a
+            <PuzzleEntry
               key={p.date}
-              href={p.date === todayStr ? '/' : `/?puzzle=${p.date}`}
-              className="flex items-center justify-between p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-blue-500/50 hover:bg-slate-800 transition-all group shadow-sm"
-            >
-              <div className="flex flex-col items-start">
-                <span className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-1">
-                  Puzzle #{p.number}
-                  {p.date === todayStr && <span className="ml-2 text-blue-500">(Today)</span>}
-                </span>
-                <span className="text-xl font-bold text-white group-hover:text-blue-400 transition-colors">
-                  {new Date(p.date + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </span>
-              </div>
-              <div className="flex items-center gap-4">
-                {p.isSolved && (
-                  <div className="bg-green-500/10 p-2 rounded-full border border-green-500/20">
-                    <Trophy size={20} className="text-green-500" />
-                  </div>
-                )}
-                <ChevronRight size={24} className="text-slate-600 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
-              </div>
-            </a>
+              p={p}
+              isLink
+              onClick={() => onNavigate(p.date)}
+            />
           ))}
         </div>
 
-        <footer className="mt-16 text-center text-slate-500 text-sm pb-12">
-          &copy; {new Date().getFullYear()} casualga.me &bull; All puzzles generated daily
+        <footer className="mt-16 text-center text-slate-500 text-sm pb-12 uppercase tracking-widest font-bold">
+          &copy; {new Date().getFullYear()} casualga.me
         </footer>
       </div>
     </main>
