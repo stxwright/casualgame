@@ -741,7 +741,7 @@ function ArchivePage({ launchDate, onNavigate }: { launchDate: Date, onNavigate:
   const todayStr = new Date().toISOString().slice(0, 10);
 
   return (
-    <main className="h-screen w-full bg-slate-900 text-slate-100 flex flex-col items-center p-6 overflow-y-auto custom-scrollbar font-sans">
+    <main className="h-screen w-full bg-slate-900 text-slate-100 flex flex-col items-center p-6 overflow-y-auto custom-scrollbar">
       <div className="w-full max-w-lg">
         <header className="mb-12 text-center">
           <h1 style={{ fontSize: 'calc(var(--s) * 0.85)' }} className="font-black tracking-tight leading-none mb-6">
