@@ -511,24 +511,18 @@ export default function App() {
             <h2 style={{ fontSize: MODAL_TITLE_SIZE }} className="font-black mb-4 text-white uppercase text-center shrink-0 leading-tight">Archive</h2>
 
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-2 pb-6">
-              <button
-                onClick={() => {
-                  startNewGame();
-                  setShowArchiveModal(false);
-                }}
+              <a
+                href="/"
                 className="w-full flex items-center justify-between p-4 rounded-xl bg-blue-600/20 border border-blue-500/30 hover:bg-blue-600/30 transition-all text-blue-400 font-bold mb-4"
               >
                 <span>Back to Today</span>
                 <ChevronRight size={20} />
-              </button>
+              </a>
 
               {archivePuzzles.map((p) => (
-                <button
+                <a
                   key={p.date}
-                  onClick={() => {
-                    startNewGame(p.date);
-                    setShowArchiveModal(false);
-                  }}
+                  href={p.date === new Date().toISOString().slice(0, 10) ? '/' : `/?puzzle=${p.date}`}
                   className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all
                     ${levelId === p.date
                       ? 'bg-slate-700 border-blue-500'
@@ -543,7 +537,7 @@ export default function App() {
                       <Trophy size={16} className="text-green-500" />
                     </div>
                   )}
-                </button>
+                </a>
               ))}
             </div>
           </div>
