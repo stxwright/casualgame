@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "WASH",
+    "INTO",
+    "SNAP",
+    "HATE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": 1
+    },
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": -1
+    }
+  ],
+  "date": "2027-10-09",
+  "puzzleNumber": 603
+}

@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "FAST",
+    "ISLE",
+    "LION",
+    "MATT"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": 1
+    }
+  ],
+  "date": "2026-04-13",
+  "puzzleNumber": 59
+}

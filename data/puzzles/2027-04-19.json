@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "RAID",
+    "ALSO",
+    "CALM",
+    "KNEE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": -1
+    },
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": -1
+    }
+  ],
+  "date": "2027-04-19",
+  "puzzleNumber": 430
+}

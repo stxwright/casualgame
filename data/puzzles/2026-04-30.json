@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "MESA",
+    "EXEC",
+    "SPAN",
+    "HOLE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": -1
+    },
+    {
+      "type": "col",
+      "idx": 0,
+      "dir": -1
+    }
+  ],
+  "date": "2026-04-30",
+  "puzzleNumber": 76
+}

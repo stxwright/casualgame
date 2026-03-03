@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "ADDS",
+    "COAT",
+    "INTO",
+    "DEEP"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": 1
+    }
+  ],
+  "date": "2026-06-30",
+  "puzzleNumber": 137
+}

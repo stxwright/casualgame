@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SHOT",
+    "PARA",
+    "EVAL",
+    "CELL"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": -1
+    }
+  ],
+  "date": "2027-09-29",
+  "puzzleNumber": 593
+}

@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "ALTO",
+    "LOUD",
+    "SAND",
+    "ONES"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": 1
+    },
+    {
+      "type": "col",
+      "idx": 0,
+      "dir": -1
+    }
+  ],
+  "date": "2027-12-29",
+  "puzzleNumber": 684
+}

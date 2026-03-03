@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "GROW",
+    "LANE",
+    "AREA",
+    "DESK"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": 1
+    },
+    {
+      "type": "row",
+      "idx": 3,
+      "dir": -1
+    }
+  ],
+  "date": "2027-08-31",
+  "puzzleNumber": 564
+}

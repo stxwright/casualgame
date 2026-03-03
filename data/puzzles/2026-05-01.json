@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SELF",
+    "OVAL",
+    "MAKE",
+    "ALEX"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": 1
+    },
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": 1
+    }
+  ],
+  "date": "2026-05-01",
+  "puzzleNumber": 77
+}

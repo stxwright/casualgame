@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "DIAL",
+    "IDLE",
+    "SEAS",
+    "HANS"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": 1
+    },
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": 1
+    }
+  ],
+  "date": "2026-11-22",
+  "puzzleNumber": 282
+}

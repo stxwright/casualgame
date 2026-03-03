@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "BLOW",
+    "IOWA",
+    "OVER",
+    "LENS"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": 1
+    }
+  ],
+  "date": "2026-10-15",
+  "puzzleNumber": 244
+}

@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "FAST",
+    "INTO",
+    "STAN",
+    "HIRE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": 1
+    },
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": 1
+    }
+  ],
+  "date": "2026-10-19",
+  "puzzleNumber": 248
+}

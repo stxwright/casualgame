@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SLOW",
+    "HOPE",
+    "OVEN",
+    "TENT"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 3,
+      "dir": 1
+    },
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": 1
+    }
+  ],
+  "date": "2026-05-29",
+  "puzzleNumber": 105
+}

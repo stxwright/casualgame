@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "WILD",
+    "IDEA",
+    "FONT",
+    "ELSE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": 1
+    }
+  ],
+  "date": "2026-08-14",
+  "puzzleNumber": 182
+}

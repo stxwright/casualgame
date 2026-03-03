@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "ADAM",
+    "CAGE",
+    "EVEN",
+    "REST"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": -1
+    },
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": 1
+    }
+  ],
+  "date": "2027-01-30",
+  "puzzleNumber": 351
+}

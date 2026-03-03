@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "LISA",
+    "EDEN",
+    "TEEN",
+    "SAME"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": -1
+    }
+  ],
+  "date": "2027-04-28",
+  "puzzleNumber": 439
+}

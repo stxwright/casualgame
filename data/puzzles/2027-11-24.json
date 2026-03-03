@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "THUS",
+    "HIST",
+    "AREA",
+    "NEST"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 3,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": 1
+    }
+  ],
+  "date": "2027-11-24",
+  "puzzleNumber": 649
+}

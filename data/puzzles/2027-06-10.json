@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "FIST",
+    "ANTI",
+    "ITEM",
+    "ROPE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": 1
+    }
+  ],
+  "date": "2027-06-10",
+  "puzzleNumber": 482
+}

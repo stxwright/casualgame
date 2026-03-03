@@ -34,11 +34,17 @@ export default function App() {
     const isDatePath = /^\d{4}-\d{2}-\d{2}$/.test(path);
 
     const now = new Date();
-    const offset = now.getTimezoneOffset();
-    const localDate = new Date(now.getTime() - (offset * 60 * 1000));
-    const todayDefault = localDate.toISOString().slice(0, 10);
+    // Use UTC date to match SSG build process
+    const todayDefault = now.toISOString().slice(0, 10);
 
     const today = targetDate || (isDatePath ? path : todayDefault);
+
+    // Redirect if it's a future date
+    if (today > todayDefault) {
+      window.history.replaceState({}, '', '/');
+      startNewGame(todayDefault);
+      return;
+    }
     
     try {
       const response = await fetch(`/puzzles/${today}.json`);
@@ -46,6 +52,11 @@ export default function App() {
         puzzleData = await response.json();
       } else {
         console.warn("No puzzle found for today:", today);
+        if (today !== todayDefault) {
+          window.history.replaceState({}, '', '/');
+          startNewGame(todayDefault);
+          return;
+        }
       }
     } catch (e) {
       console.error("Error fetching daily puzzle:", e);
@@ -521,17 +532,6 @@ export default function App() {
             <h2 style={{ fontSize: MODAL_TITLE_SIZE }} className="font-black mb-4 text-white uppercase text-center shrink-0 leading-tight">Archive</h2>
 
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-2 pb-6">
-              <button
-                onClick={() => {
-                  startNewGame();
-                  setShowArchiveModal(false);
-                }}
-                className="w-full flex items-center justify-between p-4 rounded-xl bg-blue-600/20 border border-blue-500/30 hover:bg-blue-600/30 transition-all text-blue-400 font-bold mb-4"
-              >
-                <span>Back to Today</span>
-                <ChevronRight size={20} />
-              </button>
-
               {archivePuzzles.map((p) => (
                 <button
                   key={p.date}

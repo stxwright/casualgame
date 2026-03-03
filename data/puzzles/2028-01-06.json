@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SEAL",
+    "AUTO",
+    "IRON",
+    "DOME"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": 1
+    }
+  ],
+  "date": "2028-01-06",
+  "puzzleNumber": 692
+}

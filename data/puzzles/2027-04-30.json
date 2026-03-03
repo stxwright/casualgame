@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "TALE",
+    "ORAL",
+    "NEWS",
+    "EASE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": 1
+    },
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": 1
+    }
+  ],
+  "date": "2027-04-30",
+  "puzzleNumber": 441
+}

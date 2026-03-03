@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SPAM",
+    "PARA",
+    "ACER",
+    "SEAS"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": -1
+    },
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": -1
+    }
+  ],
+  "date": "2027-03-25",
+  "puzzleNumber": 405
+}

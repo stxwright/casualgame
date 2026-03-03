@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SNAP",
+    "WINE",
+    "INNS",
+    "MEAT"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": -1
+    },
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": -1
+    }
+  ],
+  "date": "2027-11-16",
+  "puzzleNumber": 641
+}

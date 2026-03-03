@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "PROS",
+    "LIVE",
+    "OPEN",
+    "TEND"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": -1
+    }
+  ],
+  "date": "2028-01-14",
+  "puzzleNumber": 700
+}

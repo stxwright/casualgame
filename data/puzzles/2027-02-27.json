@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SHIP",
+    "PASO",
+    "OILS",
+    "TREE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": 1
+    },
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": 1
+    }
+  ],
+  "date": "2027-02-27",
+  "puzzleNumber": 379
+}

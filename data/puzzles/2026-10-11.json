@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "WIFE",
+    "IDEA",
+    "DOES",
+    "ELSE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": 1
+    }
+  ],
+  "date": "2026-10-11",
+  "puzzleNumber": 240
+}

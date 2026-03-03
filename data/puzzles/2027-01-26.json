@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "CAFE",
+    "ORAL",
+    "LENS",
+    "EASE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": -1
+    }
+  ],
+  "date": "2027-01-26",
+  "puzzleNumber": 347
+}

@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "GLEN",
+    "RIDE",
+    "ONES",
+    "WENT"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": -1
+    },
+    {
+      "type": "col",
+      "idx": 0,
+      "dir": -1
+    }
+  ],
+  "date": "2027-10-04",
+  "puzzleNumber": 598
+}

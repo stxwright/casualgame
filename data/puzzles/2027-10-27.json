@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SOFA",
+    "OVER",
+    "MEET",
+    "ENDS"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 3,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 3,
+      "dir": -1
+    }
+  ],
+  "date": "2027-10-27",
+  "puzzleNumber": 621
+}

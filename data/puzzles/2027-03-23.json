@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "HIGH",
+    "AREA",
+    "WANT",
+    "KNEE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": -1
+    }
+  ],
+  "date": "2027-03-23",
+  "puzzleNumber": 403
+}

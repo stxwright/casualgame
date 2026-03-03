@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "ACTS",
+    "CORE",
+    "EVEN",
+    "REED"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": 1
+    }
+  ],
+  "date": "2026-04-04",
+  "puzzleNumber": 50
+}

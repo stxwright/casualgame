@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "RAIN",
+    "ONTO",
+    "ONES",
+    "FAME"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": -1
+    }
+  ],
+  "date": "2027-03-24",
+  "puzzleNumber": 404
+}

@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "BATH",
+    "ECHO",
+    "NEON",
+    "DRUG"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": 1
+    },
+    {
+      "type": "col",
+      "idx": 3,
+      "dir": 1
+    }
+  ],
+  "date": "2026-03-29",
+  "puzzleNumber": 44
+}

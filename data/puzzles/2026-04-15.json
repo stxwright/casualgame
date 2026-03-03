@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "HIST",
+    "ANTI",
+    "STEM",
+    "HOPE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": -1
+    }
+  ],
+  "date": "2026-04-15",
+  "puzzleNumber": 61
+}

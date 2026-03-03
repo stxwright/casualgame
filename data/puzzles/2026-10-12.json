@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "FITS",
+    "AREA",
+    "MANY",
+    "ENDS"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": 1
+    },
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": 1
+    }
+  ],
+  "date": "2026-10-12",
+  "puzzleNumber": 241
+}

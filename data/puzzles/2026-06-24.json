@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "FILL",
+    "IDEA",
+    "LOST",
+    "ELSE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": -1
+    }
+  ],
+  "date": "2026-06-24",
+  "puzzleNumber": 131
+}

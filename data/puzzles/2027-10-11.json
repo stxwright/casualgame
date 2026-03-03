@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "CASA",
+    "USED",
+    "TIED",
+    "SANS"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": 1
+    }
+  ],
+  "date": "2027-10-11",
+  "puzzleNumber": 605
+}

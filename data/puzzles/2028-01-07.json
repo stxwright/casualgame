@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SHOT",
+    "TONE",
+    "ALEX",
+    "NEST"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "col",
+      "idx": 3,
+      "dir": -1
+    }
+  ],
+  "date": "2028-01-07",
+  "puzzleNumber": 693
+}

@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "LOSS",
+    "ANNA",
+    "STAN",
+    "TOPS"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 3,
+      "dir": 1
+    },
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": -1
+    }
+  ],
+  "date": "2027-06-14",
+  "puzzleNumber": 486
+}

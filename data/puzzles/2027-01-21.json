@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SHED",
+    "POLO",
+    "ALSO",
+    "SEEM"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": 1
+    },
+    {
+      "type": "col",
+      "idx": 0,
+      "dir": 1
+    }
+  ],
+  "date": "2027-01-21",
+  "puzzleNumber": 342
+}

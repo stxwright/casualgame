@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "ARAB",
+    "RACE",
+    "CTRL",
+    "HEEL"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 0,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": 1
+    }
+  ],
+  "date": "2026-03-28",
+  "puzzleNumber": 43
+}

@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SEAS",
+    "HALO",
+    "USER",
+    "TEXT"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": 1
+    }
+  ],
+  "date": "2027-09-28",
+  "puzzleNumber": 592
+}

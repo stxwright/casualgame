@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "STAT",
+    "HUGE",
+    "ONES",
+    "WEST"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 3,
+      "dir": 1
+    },
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": 1
+    }
+  ],
+  "date": "2026-07-13",
+  "puzzleNumber": 150
+}

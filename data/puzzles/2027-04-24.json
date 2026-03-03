@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "EDIT",
+    "RUSH",
+    "IDLE",
+    "KEEN"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": 1
+    },
+    {
+      "type": "col",
+      "idx": 3,
+      "dir": -1
+    }
+  ],
+  "date": "2027-04-24",
+  "puzzleNumber": 435
+}

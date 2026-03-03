@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "MATS",
+    "ECHO",
+    "AREA",
+    "TEMP"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": 1
+    },
+    {
+      "type": "col",
+      "idx": 0,
+      "dir": 1
+    }
+  ],
+  "date": "2027-01-13",
+  "puzzleNumber": 334
+}

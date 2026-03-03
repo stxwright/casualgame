@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "PULL",
+    "ASIA",
+    "RENO",
+    "ASKS"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": -1
+    },
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": -1
+    }
+  ],
+  "date": "2027-04-07",
+  "puzzleNumber": 418
+}

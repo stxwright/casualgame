@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "LOST",
+    "INTO",
+    "STAY",
+    "TONS"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": 1
+    },
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": -1
+    }
+  ],
+  "date": "2027-03-26",
+  "puzzleNumber": 406
+}

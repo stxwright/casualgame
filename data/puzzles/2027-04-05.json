@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SLOT",
+    "HIRE",
+    "EVAL",
+    "DELL"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 3,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": -1
+    }
+  ],
+  "date": "2027-04-05",
+  "puzzleNumber": 416
+}

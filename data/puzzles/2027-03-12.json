@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SPOT",
+    "LOVE",
+    "OPEN",
+    "WENT"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": 1
+    },
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": -1
+    }
+  ],
+  "date": "2027-03-12",
+  "puzzleNumber": 392
+}

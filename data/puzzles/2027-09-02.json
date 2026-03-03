@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "DAME",
+    "ORAL",
+    "SETS",
+    "EASE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 3,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": 1
+    }
+  ],
+  "date": "2027-09-02",
+  "puzzleNumber": 566
+}

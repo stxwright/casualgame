@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "LIKE",
+    "EDEN",
+    "SEED",
+    "SANS"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": -1
+    }
+  ],
+  "date": "2026-07-11",
+  "puzzleNumber": 148
+}

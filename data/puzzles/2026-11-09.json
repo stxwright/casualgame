@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "DEAN",
+    "RARE",
+    "USES",
+    "MEAT"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 3,
+      "dir": -1
+    },
+    {
+      "type": "col",
+      "idx": 3,
+      "dir": -1
+    }
+  ],
+  "date": "2026-11-09",
+  "puzzleNumber": 269
+}

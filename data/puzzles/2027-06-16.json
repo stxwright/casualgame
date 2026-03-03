@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SHOT",
+    "PERU",
+    "ARAB",
+    "SOLE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 0,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 3,
+      "dir": -1
+    }
+  ],
+  "date": "2027-06-16",
+  "puzzleNumber": 488
+}

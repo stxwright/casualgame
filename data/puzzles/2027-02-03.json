@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SLOW",
+    "PIPE",
+    "OVEN",
+    "TENT"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "col",
+      "idx": 0,
+      "dir": 1
+    }
+  ],
+  "date": "2027-02-03",
+  "puzzleNumber": 355
+}

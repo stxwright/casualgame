@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SOFA",
+    "EVAL",
+    "LAKE",
+    "FLEX"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 0,
+      "dir": 1
+    },
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": 1
+    }
+  ],
+  "date": "2026-08-22",
+  "puzzleNumber": 190
+}

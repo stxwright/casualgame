@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "GALE",
+    "UNIX",
+    "ANTI",
+    "MEET"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": -1
+    }
+  ],
+  "date": "2026-05-10",
+  "puzzleNumber": 86
+}

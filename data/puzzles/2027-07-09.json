@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "DISH",
+    "IDEA",
+    "COAT",
+    "ELSE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": 1
+    },
+    {
+      "type": "col",
+      "idx": 0,
+      "dir": -1
+    }
+  ],
+  "date": "2027-07-09",
+  "puzzleNumber": 511
+}

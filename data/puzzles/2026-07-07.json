@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "TIDE",
+    "EDEN",
+    "READ",
+    "MARS"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": 1
+    },
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": 1
+    }
+  ],
+  "date": "2026-07-07",
+  "puzzleNumber": 144
+}

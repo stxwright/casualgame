@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SPAN",
+    "WINE",
+    "ANNA",
+    "PEER"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": 1
+    },
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": -1
+    }
+  ],
+  "date": "2026-03-21",
+  "puzzleNumber": 36
+}

@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "PLAN",
+    "RARE",
+    "ONES",
+    "SEAT"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": -1
+    }
+  ],
+  "date": "2026-06-29",
+  "puzzleNumber": 136
+}

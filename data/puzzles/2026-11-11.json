@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "UTAH",
+    "POLO",
+    "ONES",
+    "NEXT"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 0,
+      "dir": 1
+    },
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": 1
+    }
+  ],
+  "date": "2026-11-11",
+  "puzzleNumber": 271
+}

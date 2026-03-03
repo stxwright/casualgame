@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "DUMP",
+    "ASIA",
+    "TEST",
+    "ARCH"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": 1
+    },
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": 1
+    }
+  ],
+  "date": "2026-06-17",
+  "puzzleNumber": 124
+}

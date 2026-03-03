@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "FIST",
+    "IDLE",
+    "LEON",
+    "MATT"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": 1
+    }
+  ],
+  "date": "2026-07-06",
+  "puzzleNumber": 143
+}

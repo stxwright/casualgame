@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SETS",
+    "CART",
+    "ASIA",
+    "NEON"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": 1
+    },
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": 1
+    }
+  ],
+  "date": "2027-07-26",
+  "puzzleNumber": 528
+}

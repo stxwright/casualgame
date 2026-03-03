@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SALT",
+    "KNEE",
+    "INNS",
+    "PAST"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": 1
+    },
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": -1
+    }
+  ],
+  "date": "2027-09-21",
+  "puzzleNumber": 585
+}

@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "ARAB",
+    "CARE",
+    "TREE",
+    "SEAN"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 3,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 3,
+      "dir": 1
+    }
+  ],
+  "date": "2028-02-03",
+  "puzzleNumber": 720
+}

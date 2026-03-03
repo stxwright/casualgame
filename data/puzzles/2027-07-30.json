@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "MEMO",
+    "ICON",
+    "SHOE",
+    "SONS"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": 1
+    },
+    {
+      "type": "col",
+      "idx": 0,
+      "dir": 1
+    }
+  ],
+  "date": "2027-07-30",
+  "puzzleNumber": 532
+}

@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "DOSE",
+    "EVIL",
+    "SETS",
+    "KNEE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 3,
+      "dir": -1
+    }
+  ],
+  "date": "2026-05-18",
+  "puzzleNumber": 94
+}

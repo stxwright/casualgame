@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "FACE",
+    "IRAN",
+    "SEND",
+    "HATS"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": -1
+    }
+  ],
+  "date": "2026-06-09",
+  "puzzleNumber": 116
+}

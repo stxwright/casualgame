@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "MINE",
+    "IDEA",
+    "LOWS",
+    "ELSE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": 1
+    }
+  ],
+  "date": "2026-12-08",
+  "puzzleNumber": 298
+}

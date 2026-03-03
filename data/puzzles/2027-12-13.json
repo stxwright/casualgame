@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "TASK",
+    "ICON",
+    "MINE",
+    "EDGE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": -1
+    },
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": -1
+    }
+  ],
+  "date": "2027-12-13",
+  "puzzleNumber": 668
+}

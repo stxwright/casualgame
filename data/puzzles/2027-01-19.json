@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "COLD",
+    "AREA",
+    "MATT",
+    "ELSE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": 1
+    },
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": -1
+    }
+  ],
+  "date": "2027-01-19",
+  "puzzleNumber": 340
+}

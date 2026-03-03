@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SOLD",
+    "AREA",
+    "VAST",
+    "ELSE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": -1
+    },
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": 1
+    }
+  ],
+  "date": "2026-04-24",
+  "puzzleNumber": 70
+}

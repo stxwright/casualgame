@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "SHOT",
+    "WIDE",
+    "ADDS",
+    "PEST"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": -1
+    },
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": -1
+    }
+  ],
+  "date": "2027-12-19",
+  "puzzleNumber": 674
+}

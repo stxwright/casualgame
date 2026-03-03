@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "WERE",
+    "IDEA",
+    "REAR",
+    "ENDS"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 0,
+      "dir": 1
+    },
+    {
+      "type": "row",
+      "idx": 2,
+      "dir": -1
+    }
+  ],
+  "date": "2028-01-02",
+  "puzzleNumber": 688
+}

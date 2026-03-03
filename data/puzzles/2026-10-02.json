@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "NEST",
+    "AREA",
+    "SING",
+    "ACTS"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": 1
+    },
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": -1
+    }
+  ],
+  "date": "2026-10-02",
+  "puzzleNumber": 231
+}

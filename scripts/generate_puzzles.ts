@@ -76,8 +76,8 @@ async function generatePuzzles() {
   const epoch = new Date('2026-02-14T00:00:00Z').getTime();
   const msInDay = 24 * 60 * 60 * 1000;
 
-  // Generate for 30 days from launch for testing
-  const countToGenerate = 30;
+  // Generate for 2 years from launch
+  const countToGenerate = 730;
 
   for (let i = 0; i < countToGenerate; i++) {
     const puzzleDate = new Date(epoch + (i * msInDay));

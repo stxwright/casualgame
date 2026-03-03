@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "CHAR",
+    "RIDE",
+    "ODDS",
+    "PEST"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 1,
+      "dir": 1
+    },
+    {
+      "type": "row",
+      "idx": 0,
+      "dir": -1
+    }
+  ],
+  "date": "2026-11-03",
+  "puzzleNumber": 263
+}

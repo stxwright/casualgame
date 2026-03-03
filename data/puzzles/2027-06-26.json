@@ -1,0 +1,22 @@
+{
+  "solution": [
+    "LOCK",
+    "IRAN",
+    "FAME",
+    "ELSE"
+  ],
+  "scrambleMoves": [
+    {
+      "type": "col",
+      "idx": 2,
+      "dir": 1
+    },
+    {
+      "type": "row",
+      "idx": 1,
+      "dir": 1
+    }
+  ],
+  "date": "2027-06-26",
+  "puzzleNumber": 498
+}
