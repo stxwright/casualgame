@@ -108,8 +108,10 @@ function seoPlugin() {
 
       // Replace existing title and description if any, otherwise prepend to head
       let newHtml = html
-        .replace(/<title>.*?<\/title>/, '')
-        .replace(/<meta name="description" content=".*?" \/>/, '')
+        .replace(/<title>.*?<\/title>/g, '')
+        .replace(/<meta name="description" content=".*?" \/>/g, '')
+        .replace(/<meta property="og:.*?" content=".*?" \/>/g, '')
+        .replace(/<meta name="twitter:.*?" content=".*?" \/>/g, '')
         .replace('</head>', `${metaTags}</head>`)
         .replace('<div id="root"></div>', `<div id="root">${staticShell}</div>`);
 
