@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, Share2, HelpCircle, History } from 'lucide-react';
-import { doc, getDoc } from 'firebase/firestore/lite';
-import { db } from './firebase';
 import { Grid, Move, Attempt, Feedback, GameState, MoveType } from './types';
 
 const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
@@ -52,13 +50,13 @@ export default function App() {
     if (window.INITIAL_PUZZLE_DATA && window.INITIAL_PUZZLE_DATA.date === today) {
       puzzleData = window.INITIAL_PUZZLE_DATA;
     } else {
-      // 2. Fetch from Firestore at runtime
+      // 2. Fetch static JSON at runtime
       try {
-        const snap = await getDoc(doc(db, 'puzzles', today));
-        if (snap.exists()) {
-          puzzleData = snap.data();
+        const response = await fetch(`/puzzles/${today}.json`);
+        if (response.ok) {
+          puzzleData = await response.json();
         } else {
-          console.warn("No puzzle found for today:", today);
+          console.warn("No puzzle found for date:", today);
           if (today !== todayDefault) {
             window.history.replaceState({}, '', '/');
             startNewGame(todayDefault);
@@ -66,7 +64,7 @@ export default function App() {
           }
         }
       } catch (e) {
-        console.error("Error fetching daily puzzle from Firestore:", e);
+        console.error("Error fetching daily puzzle static file:", e);
       }
     }
 

@@ -8,40 +8,85 @@ const __dirname = path.dirname(__filename);
 const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
 const SITE_URL = 'https://casualga.me/';
 const DIST_DIR = path.resolve(__dirname, '..', 'dist');
+const GRIDS_PATH = path.resolve(__dirname, 'data', 'grids.json');
+const PUZZLES_DIST_DIR = path.resolve(DIST_DIR, 'puzzles');
 
-// Use the Firestore REST API to fetch data during build
-// https://firestore.googleapis.com/v1/projects/{project_id}/databases/(default)/documents/{collection}/{document_id}
-const PROJECT_ID = 'casualgame-9b4f9';
-const COLLECTION = 'puzzles';
+// DETERMINISTIC PUZZLE GENERATION LOGIC
 
-async function fetchPuzzle(dateStr) {
-  const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${COLLECTION}/${dateStr}`;
-  try {
-    const response = await fetch(url);
-    if (!response.ok) return null;
-    const data = await response.json();
+// A simple seeded RNG (Mulberry32)
+function seededRandom(seed) {
+  return function() {
+    let t = seed += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
 
-    // Convert Firestore REST format to simple JS object
-    // Note: This needs to match the structure the app expects
-    const fields = data.fields;
-    return {
-      date: dateStr,
-      solution: fields.solution.arrayValue.values.map(v => v.stringValue),
-      scrambleMoves: fields.scrambleMoves.arrayValue.values.map(v => ({
-        type: v.mapValue.fields.type.stringValue,
-        idx: parseInt(v.mapValue.fields.idx.integerValue),
-        dir: parseInt(v.mapValue.fields.dir.integerValue)
-      }))
-    };
-  } catch (e) {
-    console.error(`Error fetching puzzle for ${dateStr}:`, e);
-    return null;
+// Simple string hasher for seeding
+function xmur3(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3452271217);
+    h = h << 13 | h >>> 19;
   }
+  return function() {
+    h = Math.imul(h ^ h >>> 16, 2246822507);
+    h = Math.imul(h ^ h >>> 13, 3266489909);
+    return (h ^= h >>> 16) >>> 0;
+  };
 }
 
-function getPuzzleNumber(dateStr) {
-  return Math.floor((new Date(dateStr + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+function shuffleArray(array, seedStr) {
+  const rng = seededRandom(xmur3(seedStr)());
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
 }
+
+function generateTwoMoveScramble(dateStr) {
+  const rng = seededRandom(xmur3(dateStr)());
+  const moves = [];
+  const colIdx = Math.floor(rng() * 4);
+  const rowIdx = Math.floor(rng() * 4);
+  const colDir = rng() > 0.5 ? 1 : -1;
+  const rowDir = rng() > 0.5 ? 1 : -1;
+
+  const colMove = { type: 'col', idx: colIdx, dir: colDir };
+  const rowMove = { type: 'row', idx: rowIdx, dir: rowDir };
+
+  if (rng() > 0.5) {
+    moves.push(colMove, rowMove);
+  } else {
+    moves.push(rowMove, colMove);
+  }
+  return moves;
+}
+
+const rawGrids = JSON.parse(fs.readFileSync(GRIDS_PATH, 'utf8'));
+const shuffledGrids = shuffleArray([...rawGrids], "wordwrap-v1-stable-shuffle");
+const selectionEpoch = new Date('2026-01-01T00:00:00Z').getTime();
+const msInDay = 24 * 60 * 60 * 1000;
+
+function getPuzzleData(dateStr) {
+  const puzzleDate = new Date(dateStr + 'T12:00:00Z');
+  const daysSinceSelectionEpoch = Math.floor((puzzleDate.getTime() - selectionEpoch) / msInDay);
+  const selection = shuffledGrids[daysSinceSelectionEpoch % shuffledGrids.length];
+  const scrambleMoves = generateTwoMoveScramble(dateStr);
+  const puzzleNumber = Math.floor((puzzleDate.getTime() - LAUNCH_DATE.getTime()) / msInDay) + 1;
+
+  return {
+    date: dateStr,
+    solution: selection,
+    scrambleMoves: scrambleMoves,
+    puzzleNumber: puzzleNumber
+  };
+}
+
+// SSG LOGIC
 
 function generateSEO(dateStr, puzzleNumber, puzzleData, html) {
   const title = `WordWrap #${puzzleNumber} — Daily Word Grid Puzzle Game | casualga.me`;
@@ -104,6 +149,10 @@ async function runSSG() {
   const todayStr = now.toISOString().slice(0, 10);
   const indexHtml = fs.readFileSync(path.resolve(DIST_DIR, 'index.html'), 'utf-8');
 
+  if (!fs.existsSync(PUZZLES_DIST_DIR)) {
+    fs.mkdirSync(PUZZLES_DIST_DIR, { recursive: true });
+  }
+
   const sitemapUrls = [SITE_URL];
 
   // Generate for all dates from LAUNCH_DATE to today
@@ -114,16 +163,11 @@ async function runSSG() {
     current.setDate(current.getDate() + 1);
   }
 
-  console.log(`Generating SSG for ${puzzles.length} puzzles from Firestore...`);
+  console.log(`Generating SSG for ${puzzles.length} puzzles from source grids...`);
 
   for (const date of puzzles) {
-    const puzzleData = await fetchPuzzle(date);
-    if (!puzzleData) {
-      console.warn(`Skipping ${date} - data not found in Firestore.`);
-      continue;
-    }
-
-    const puzzleNumber = getPuzzleNumber(date);
+    const puzzleData = getPuzzleData(date);
+    const puzzleNumber = puzzleData.puzzleNumber;
     const puzzleHtml = generateSEO(date, puzzleNumber, puzzleData, indexHtml);
     const puzzleDir = path.resolve(DIST_DIR, date);
 
@@ -131,6 +175,10 @@ async function runSSG() {
       fs.mkdirSync(puzzleDir);
     }
     fs.writeFileSync(path.resolve(puzzleDir, 'index.html'), puzzleHtml);
+
+    // Also write JSON for SPA navigation
+    fs.writeFileSync(path.resolve(PUZZLES_DIST_DIR, `${date}.json`), JSON.stringify(puzzleData));
+
     sitemapUrls.push(`${SITE_URL}${date}`);
 
     if (date === todayStr) {
@@ -151,7 +199,7 @@ ${sitemapUrls.map(url => `  <url>
 </urlset>`;
   fs.writeFileSync(path.resolve(DIST_DIR, 'sitemap.xml'), sitemap);
 
-  console.log('SSG and Sitemap generation complete.');
+  console.log('SSG, JSON, and Sitemap generation complete.');
 }
 
 runSSG().catch(console.error);
