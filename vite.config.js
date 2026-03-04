@@ -8,8 +8,8 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// SEO constants
 const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
+
 const SITE_URL = 'https://casualga.me/';
 
 function seoPlugin() {
@@ -18,10 +18,14 @@ function seoPlugin() {
     transformIndexHtml(html) {
       const now = new Date();
       const dateStr = now.toISOString().slice(0, 10);
-      const puzzleNumber = Math.floor((new Date(dateStr + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const puzzleNumber = Math.floor(
+        (new Date(dateStr + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)
+      ) + 1;
 
-      const title = `WordWrap #${puzzleNumber} — Daily Word Grid Puzzle Game | casualga.me`;
+      const dateLabel = new Date(dateStr + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      const title = `WordWrap #${puzzleNumber} (${dateLabel}) — Daily Word Grid Puzzle Game | casualga.me`;
       const description = "Shift rows and columns to arrange letters into four words across and four words down in this daily word puzzle. Challenge yourself with a new Wordwrap grid every day!";
+      const ogImage = `${SITE_URL}og-image.png`;
 
       const structuredData = {
         "@context": "https://schema.org",
@@ -32,15 +36,8 @@ function seoPlugin() {
         "url": SITE_URL,
         "applicationCategory": "Game",
         "operatingSystem": "Web",
-        "author": {
-          "@type": "Organization",
-          "name": "casualga.me"
-        },
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD"
-        }
+        "author": { "@type": "Organization", "name": "casualga.me" },
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
       };
 
       const howToData = {
@@ -48,18 +45,9 @@ function seoPlugin() {
         "@type": "HowTo",
         "name": "How to play WordWrap",
         "step": [
-          {
-            "@type": "HowToStep",
-            "text": "Shift rows and columns to arrange letters into 4 words across and 4 words down."
-          },
-          {
-            "@type": "HowToStep",
-            "text": "Each attempt consists of 2 moves. You have 6 attempts total."
-          },
-          {
-            "@type": "HowToStep",
-            "text": "Correct moves are marked green, partial moves yellow, and incorrect moves red."
-          }
+          { "@type": "HowToStep", "text": "Shift rows and columns to arrange letters into 4 words across and 4 words down." },
+          { "@type": "HowToStep", "text": "Each attempt consists of 2 moves. You have 6 attempts total." },
+          { "@type": "HowToStep", "text": "Correct moves are marked green, partial moves yellow, and incorrect moves red." }
         ]
       };
 
@@ -68,26 +56,26 @@ function seoPlugin() {
     <meta name="description" content="${description}" />
     <link rel="canonical" href="${SITE_URL}" />
 
-    <!-- Open Graph / Facebook -->
+    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="${SITE_URL}" />
     <meta property="og:title" content="${title}" />
     <meta property="og:description" content="${description}" />
-    <meta property="og:image" content="${SITE_URL}og-image.png" />
+    <meta property="og:image" content="${ogImage}" />
 
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="${SITE_URL}" />
-    <meta property="twitter:title" content="${title}" />
-    <meta property="twitter:description" content="${description}" />
-    <meta property="twitter:image" content="${SITE_URL}og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="${SITE_URL}" />
+    <meta name="twitter:title" content="${title}" />
+    <meta name="twitter:description" content="${description}" />
+    <meta name="twitter:image" content="${ogImage}" />
 
     <script type="application/ld+json">${JSON.stringify(structuredData)}</script>
     <script type="application/ld+json">${JSON.stringify(howToData)}</script>
 `;
 
       const staticShell = `
-      <div id="seo-content" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;">
+      <div id="seo-content" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0;">
         <h1>WordWrap #${puzzleNumber}</h1>
         <p>Today is ${new Date(dateStr + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
         <p>${description}</p>
@@ -106,20 +94,15 @@ function seoPlugin() {
       </div>
 `;
 
-      // Replace existing title and description if any, otherwise prepend to head
-      let newHtml = html
-        .replace(/<title>.*?<\/title>/, '')
-        .replace(/<meta name="description" content=".*?" \/>/, '')
+      return html
         .replace('</head>', `${metaTags}</head>`)
         .replace('<div id="root"></div>', `<div id="root">${staticShell}</div>`);
-
-      return newHtml;
     },
+
     closeBundle() {
       const sitemapPath = path.resolve(__dirname, 'dist/sitemap.xml');
       if (fs.existsSync(sitemapPath)) {
-        const now = new Date();
-        const dateStr = now.toISOString().slice(0, 10);
+        const dateStr = new Date().toISOString().slice(0, 10);
         let sitemap = fs.readFileSync(sitemapPath, 'utf-8');
         sitemap = sitemap.replace(/<lastmod>.*?<\/lastmod>/g, `<lastmod>${dateStr}</lastmod>`);
         fs.writeFileSync(sitemapPath, sitemap);
@@ -129,15 +112,8 @@ function seoPlugin() {
   };
 }
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-    seoPlugin()
-  ],
+  plugins: [react(), tailwindcss(), seoPlugin()],
   base: './',
-  server: {
-    host: true
-  }
+  server: { host: true }
 })
