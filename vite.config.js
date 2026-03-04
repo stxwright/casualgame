@@ -21,7 +21,7 @@ function seoPlugin() {
       const puzzleNumber = Math.floor((new Date(dateStr + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
       const title = `WordWrap #${puzzleNumber} — Daily Word Grid Puzzle Game | casualga.me`;
-      const description = "Shift rows and columns to arrange letters into four words across and four words down in this daily word puzzle. Challenge yourself with a new Wordwrap grid every day!";
+      const description = "Shift rows and columns to spell 4 words across and 4 words down. A new challenge every day.";
 
       const structuredData = {
         "@context": "https://schema.org",
@@ -76,11 +76,11 @@ function seoPlugin() {
     <meta property="og:image" content="${SITE_URL}og-image.png" />
 
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="${SITE_URL}" />
-    <meta property="twitter:title" content="${title}" />
-    <meta property="twitter:description" content="${description}" />
-    <meta property="twitter:image" content="${SITE_URL}og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="${SITE_URL}" />
+    <meta name="twitter:title" content="${title}" />
+    <meta name="twitter:description" content="${description}" />
+    <meta name="twitter:image" content="${SITE_URL}og-image.png" />
 
     <script type="application/ld+json">${JSON.stringify(structuredData)}</script>
     <script type="application/ld+json">${JSON.stringify(howToData)}</script>
