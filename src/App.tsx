@@ -171,9 +171,24 @@ export default function App() {
   }, [startNewGame]);
 
   useEffect(() => {
-    if (puzzleNumber > 0) {
-      const dateLabel = levelId ? new Date(levelId + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
-      document.title = `WordWrap #${puzzleNumber}${dateLabel ? ` (${dateLabel})` : ''} — Daily Word Grid Puzzle Game | casualga.me`;
+    if (puzzleNumber > 0 && levelId) {
+      const dateLabel = new Date(levelId + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      const title = `WordWrap #${puzzleNumber} (${dateLabel}) — Daily Word Grid Puzzle Game | casualga.me`;
+      document.title = title;
+
+      const url = `${window.location.origin}/${levelId}`;
+
+      // Update meta tags dynamically
+      const updateMeta = (selector: string, attr: string, value: string) => {
+        const el = document.querySelector(selector);
+        if (el) el.setAttribute(attr, value);
+      };
+
+      updateMeta('link[rel="canonical"]', 'href', url);
+      updateMeta('meta[property="og:url"]', 'content', url);
+      updateMeta('meta[property="og:title"]', 'content', title);
+      updateMeta('meta[property="twitter:url"]', 'content', url);
+      updateMeta('meta[property="twitter:title"]', 'content', title);
     }
   }, [puzzleNumber, levelId]);
 
@@ -294,16 +309,20 @@ export default function App() {
       a.feedback.map(feedbackToEmoji).join('')
     ).join('\n');
 
-    const url = `https://casualga.me/${levelId}`;
-    const shareText = `${header}\n\n${gridEmojis}\n\n${url}`;
+    const url = `${window.location.origin}/${levelId}`;
+    const shareText = `${header}\n\n${gridEmojis}`;
 
     if (navigator.share) {
-      navigator.share({ text: shareText }).catch(() => {
-        navigator.clipboard.writeText(shareText);
+      navigator.share({
+        title: `Wordwrap #${puzzleNumber}`,
+        text: shareText,
+        url: url
+      }).catch(() => {
+        navigator.clipboard.writeText(`${shareText}\n\n${url}`);
         showCopyFeedback();
       });
     } else {
-      navigator.clipboard.writeText(shareText);
+      navigator.clipboard.writeText(`${shareText}\n\n${url}`);
       showCopyFeedback();
     }
   };
