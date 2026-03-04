@@ -6,6 +6,12 @@ import { Grid, Move, Attempt, Feedback, GameState, MoveType } from './types';
 
 const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
 
+const getPuzzleDateFromUrl = () => {
+  const path = window.location.pathname.replace(/^\/|\/$/g, '');
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  return dateRegex.test(path) ? path : null;
+};
+
 export default function App() {
   const [grid, setGrid] = useState<Grid>([[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' ']]);
   const [initialGrid, setInitialGrid] = useState<Grid | null>(null);
@@ -18,6 +24,8 @@ export default function App() {
   const [showFailureModal, setShowFailureModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [showArchiveModal, setShowArchiveModal] = useState(false);
+  const [showFutureModal, setShowFutureModal] = useState(false);
+  const [showPreArchiveModal, setShowPreArchiveModal] = useState(false);
   const [lastMoveType, setLastMoveType] = useState<MoveType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -29,19 +37,35 @@ export default function App() {
 
   const startNewGame = useCallback(async (targetDate?: string) => {
     setIsLoading(true);
+    setShowFutureModal(false);
+    setShowPreArchiveModal(false);
     let puzzleData: any = null;
     
     const now = new Date();
     const offset = now.getTimezoneOffset();
     const localDate = new Date(now.getTime() - (offset * 60 * 1000));
-    const today = targetDate || localDate.toISOString().slice(0, 10);
+    const todayStr = localDate.toISOString().slice(0, 10);
+
+    const dateToLoad = targetDate || getPuzzleDateFromUrl() || todayStr;
+
+    if (dateToLoad > todayStr) {
+      setShowFutureModal(true);
+      setIsLoading(false);
+      return;
+    }
+
+    if (new Date(dateToLoad + 'T00:00:00Z') < LAUNCH_DATE) {
+      setShowPreArchiveModal(true);
+      setIsLoading(false);
+      return;
+    }
     
     try {
-      const snap = await getDoc(doc(db, 'puzzles', today));
+      const snap = await getDoc(doc(db, 'puzzles', dateToLoad));
       if (snap.exists()) {
         puzzleData = snap.data();
       } else {
-        console.warn("No puzzle found for today:", today);
+        console.warn("No puzzle found for:", dateToLoad);
       }
     } catch (e) {
       console.error("Error fetching daily puzzle:", e);
@@ -51,7 +75,7 @@ export default function App() {
       const finalSolution: Grid = puzzleData.solution.map((row: string) => row.split(''));
       const finalScrambleMoves: {type: 'row' | 'col', idx: number, dir: number}[] = puzzleData.scrambleMoves;
       
-      const pNum = Math.floor((new Date(today + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const pNum = Math.floor((new Date(dateToLoad + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
       setPuzzleNumber(pNum);
 
       const solMoves: Move[] = finalScrambleMoves.map(m => ({
@@ -74,7 +98,7 @@ export default function App() {
       setInitialGrid(scrambledGrid.map(r => [...r]));
 
       // 1. Try date-specific key
-      const dateKey = `wordwrap_game_state_${today}`;
+      const dateKey = `wordwrap_game_state_${dateToLoad}`;
       let savedStateStr = localStorage.getItem(dateKey);
 
       // 2. Fallback to legacy key (migration)
@@ -83,7 +107,7 @@ export default function App() {
         if (legacyStateStr) {
           try {
             const legacyState: GameState = JSON.parse(legacyStateStr);
-            if (legacyState.levelId === today) {
+            if (legacyState.levelId === dateToLoad) {
               savedStateStr = legacyStateStr;
               // Clean up legacy key
               localStorage.removeItem('wordwrap_game_state');
@@ -126,7 +150,7 @@ export default function App() {
         setShowFailureModal(false);
       }
 
-      setLevelId(today);
+      setLevelId(dateToLoad);
     } else {
       setGrid(Array(4).fill(null).map(() => Array(4).fill(' ')));
       setSolution(null);
@@ -136,7 +160,15 @@ export default function App() {
     setIsLoading(false);
   }, []);
 
-  useEffect(() => { startNewGame(); }, [startNewGame]);
+  useEffect(() => {
+    startNewGame();
+
+    const handlePopState = () => {
+      startNewGame();
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [startNewGame]);
 
   useEffect(() => {
     if (puzzleNumber > 0) {
@@ -262,7 +294,8 @@ export default function App() {
       a.feedback.map(feedbackToEmoji).join('')
     ).join('\n');
 
-    const shareText = `${header}\n\n${gridEmojis}`;
+    const url = `https://casualga.me/${levelId}`;
+    const shareText = `${header}\n\n${gridEmojis}\n\n${url}`;
 
     if (navigator.share) {
       navigator.share({ text: shareText }).catch(() => {
@@ -317,6 +350,12 @@ export default function App() {
   const MODAL_SUBTITLE_SIZE = 'calc(var(--s) * 0.3)';
   const MODAL_GRID_SIZE = 'calc(var(--s) * 0.5)';
   const canShowModal = (isSolved && showModal) || (!isSolved && showFailureModal);
+
+  const navigateToPuzzle = (date?: string) => {
+    const path = date ? `/${date}` : '/';
+    window.history.pushState({}, '', path);
+    startNewGame(date);
+  };
 
   return (
     <main className="relative flex h-screen w-screen flex-col items-center justify-center bg-slate-900 p-4 select-none overflow-hidden">
@@ -510,7 +549,7 @@ export default function App() {
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-2 pb-6">
               <button
                 onClick={() => {
-                  startNewGame();
+                  navigateToPuzzle();
                   setShowArchiveModal(false);
                 }}
                 className="w-full flex items-center justify-between p-4 rounded-xl bg-blue-600/20 border border-blue-500/30 hover:bg-blue-600/30 transition-all text-blue-400 font-bold mb-4"
@@ -523,7 +562,7 @@ export default function App() {
                 <button
                   key={p.date}
                   onClick={() => {
-                    startNewGame(p.date);
+                    navigateToPuzzle(p.date);
                     setShowArchiveModal(false);
                   }}
                   className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all
@@ -593,6 +632,41 @@ export default function App() {
               className="mt-8 w-full rounded-xl bg-blue-600 py-3 text-lg font-bold hover:bg-blue-500 shadow-xl text-white transition-all active:scale-95"
             >
               GOT IT!
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* FUTURE PUZZLE MODAL */}
+      {showFutureModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/95 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="text-center p-8 w-full max-w-lg overflow-y-auto max-h-full custom-scrollbar" style={{ minWidth: 'min(90vw, calc(var(--s) * 5))' }}>
+            <h2 style={{ fontSize: MODAL_TITLE_SIZE }} className="font-black mb-4 text-white uppercase leading-tight">Coming Soon!</h2>
+            <p className="text-slate-300 mb-8">This puzzle hasn't been published yet. Check back on that date!</p>
+            <button
+              onClick={() => navigateToPuzzle()}
+              className="w-full rounded-xl bg-blue-600 py-3 text-lg font-bold hover:bg-blue-500 shadow-xl text-white transition-all active:scale-95"
+            >
+              PLAY TODAY'S PUZZLE
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* PRE-ARCHIVE MODAL */}
+      {showPreArchiveModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/95 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="text-center p-8 w-full max-w-lg overflow-y-auto max-h-full custom-scrollbar" style={{ minWidth: 'min(90vw, calc(var(--s) * 5))' }}>
+            <h2 style={{ fontSize: MODAL_TITLE_SIZE }} className="font-black mb-4 text-white uppercase leading-tight">Way Back!</h2>
+            <p className="text-slate-300 mb-8">This date predates our puzzle archive. Check out some of our past puzzles!</p>
+            <button
+              onClick={() => {
+                setShowPreArchiveModal(false);
+                setShowArchiveModal(true);
+              }}
+              className="w-full rounded-xl bg-blue-600 py-3 text-lg font-bold hover:bg-blue-500 shadow-xl text-white transition-all active:scale-95"
+            >
+              GO TO ARCHIVE
             </button>
           </div>
         </div>
