@@ -177,6 +177,7 @@ export default function App() {
       document.title = title;
 
       const url = `${window.location.origin}/${levelId}`;
+      const imageUrl = `${window.location.origin}/og-image.png`;
 
       // Update meta tags dynamically
       const updateMeta = (selector: string, attr: string, value: string) => {
@@ -187,8 +188,10 @@ export default function App() {
       updateMeta('link[rel="canonical"]', 'href', url);
       updateMeta('meta[property="og:url"]', 'content', url);
       updateMeta('meta[property="og:title"]', 'content', title);
+      updateMeta('meta[property="og:image"]', 'content', imageUrl);
       updateMeta('meta[name="twitter:url"]', 'content', url);
       updateMeta('meta[name="twitter:title"]', 'content', title);
+      updateMeta('meta[name="twitter:image"]', 'content', imageUrl);
     }
   }, [puzzleNumber, levelId]);
 
