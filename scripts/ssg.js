@@ -8,14 +8,42 @@ const __dirname = path.dirname(__filename);
 const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
 const SITE_URL = 'https://casualga.me/';
 const DIST_DIR = path.resolve(__dirname, '..', 'dist');
-const PUZZLES_SRC_DIR = path.resolve(__dirname, '..', 'data', 'puzzles');
-const PUZZLES_DIST_DIR = path.resolve(DIST_DIR, 'puzzles');
+
+// Use the Firestore REST API to fetch data during build
+// https://firestore.googleapis.com/v1/projects/{project_id}/databases/(default)/documents/{collection}/{document_id}
+const PROJECT_ID = 'casualgame-9b4f9';
+const COLLECTION = 'puzzles';
+
+async function fetchPuzzle(dateStr) {
+  const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${COLLECTION}/${dateStr}`;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const data = await response.json();
+
+    // Convert Firestore REST format to simple JS object
+    // Note: This needs to match the structure the app expects
+    const fields = data.fields;
+    return {
+      date: dateStr,
+      solution: fields.solution.arrayValue.values.map(v => v.stringValue),
+      scrambleMoves: fields.scrambleMoves.arrayValue.values.map(v => ({
+        type: v.mapValue.fields.type.stringValue,
+        idx: parseInt(v.mapValue.fields.idx.integerValue),
+        dir: parseInt(v.mapValue.fields.dir.integerValue)
+      }))
+    };
+  } catch (e) {
+    console.error(`Error fetching puzzle for ${dateStr}:`, e);
+    return null;
+  }
+}
 
 function getPuzzleNumber(dateStr) {
   return Math.floor((new Date(dateStr + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 }
 
-function generateSEO(dateStr, puzzleNumber, html) {
+function generateSEO(dateStr, puzzleNumber, puzzleData, html) {
   const title = `WordWrap #${puzzleNumber} — Daily Word Grid Puzzle Game | casualga.me`;
   const description = "Shift rows and columns to arrange letters into four words across and four words down in this daily word puzzle. Challenge yourself with a new Wordwrap grid every day!";
   const canonical = dateStr ? `${SITE_URL}${dateStr}` : SITE_URL;
@@ -48,6 +76,7 @@ function generateSEO(dateStr, puzzleNumber, html) {
     <meta property="twitter:description" content="${description}" />
     <meta property="twitter:image" content="${SITE_URL}og-image.png" />
     <script type="application/ld+json">${JSON.stringify(structuredData)}</script>
+    <script>window.INITIAL_PUZZLE_DATA = ${JSON.stringify(puzzleData)};</script>
 `;
 
   const staticShell = `
@@ -75,44 +104,41 @@ async function runSSG() {
   const todayStr = now.toISOString().slice(0, 10);
   const indexHtml = fs.readFileSync(path.resolve(DIST_DIR, 'index.html'), 'utf-8');
 
-  if (!fs.existsSync(PUZZLES_DIST_DIR)) {
-    fs.mkdirSync(PUZZLES_DIST_DIR, { recursive: true });
-  }
-
   const sitemapUrls = [SITE_URL];
 
-  // Get all puzzles from data/puzzles
-  const puzzles = fs.readdirSync(PUZZLES_SRC_DIR)
-    .filter(f => f.endsWith('.json'))
-    .map(f => f.replace('.json', ''))
-    .filter(date => date <= todayStr)
-    .sort();
+  // Generate for all dates from LAUNCH_DATE to today
+  const puzzles = [];
+  let current = new Date(LAUNCH_DATE);
+  while (current <= now) {
+    puzzles.push(current.toISOString().slice(0, 10));
+    current.setDate(current.getDate() + 1);
+  }
 
-  console.log(`Generating SSG for ${puzzles.length} puzzles...`);
+  console.log(`Generating SSG for ${puzzles.length} puzzles from Firestore...`);
 
   for (const date of puzzles) {
+    const puzzleData = await fetchPuzzle(date);
+    if (!puzzleData) {
+      console.warn(`Skipping ${date} - data not found in Firestore.`);
+      continue;
+    }
+
     const puzzleNumber = getPuzzleNumber(date);
-    const puzzleHtml = generateSEO(date, puzzleNumber, indexHtml);
+    const puzzleHtml = generateSEO(date, puzzleNumber, puzzleData, indexHtml);
     const puzzleDir = path.resolve(DIST_DIR, date);
 
     if (!fs.existsSync(puzzleDir)) {
       fs.mkdirSync(puzzleDir);
     }
     fs.writeFileSync(path.resolve(puzzleDir, 'index.html'), puzzleHtml);
-
-    // Copy JSON to dist/puzzles
-    fs.copyFileSync(
-      path.resolve(PUZZLES_SRC_DIR, `${date}.json`),
-      path.resolve(PUZZLES_DIST_DIR, `${date}.json`)
-    );
-
     sitemapUrls.push(`${SITE_URL}${date}`);
-  }
 
-  // Update root index.html for today
-  const todayPuzzleNumber = getPuzzleNumber(todayStr);
-  const rootHtml = generateSEO(null, todayPuzzleNumber, indexHtml);
-  fs.writeFileSync(path.resolve(DIST_DIR, 'index.html'), rootHtml);
+    if (date === todayStr) {
+      // Update root index.html with today's baked data
+      const rootHtml = generateSEO(null, puzzleNumber, puzzleData, indexHtml);
+      fs.writeFileSync(path.resolve(DIST_DIR, 'index.html'), rootHtml);
+    }
+  }
 
   // Generate sitemap.xml
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

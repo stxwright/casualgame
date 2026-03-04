@@ -33,6 +33,3 @@ dist-ssr
 
 # Firebase Service Account
 scripts/service-account.json
-
-# Local Puzzle Data (Generated)
-public/puzzles/

@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, Share2, HelpCircle, History } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore/lite';
+import { db } from './firebase';
 import { Grid, Move, Attempt, Feedback, GameState, MoveType } from './types';
 
 const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
@@ -45,26 +47,34 @@ export default function App() {
       startNewGame(todayDefault);
       return;
     }
-    
-    try {
-      const response = await fetch(`/puzzles/${today}.json`);
-      if (response.ok) {
-        puzzleData = await response.json();
-      } else {
-        console.warn("No puzzle found for today:", today);
-        if (today !== todayDefault) {
-          window.history.replaceState({}, '', '/');
-          startNewGame(todayDefault);
-          return;
+
+    // 1. Try "baked" data from SSG
+    if (window.INITIAL_PUZZLE_DATA && window.INITIAL_PUZZLE_DATA.date === today) {
+      puzzleData = window.INITIAL_PUZZLE_DATA;
+    } else {
+      // 2. Fetch from Firestore at runtime
+      try {
+        const snap = await getDoc(doc(db, 'puzzles', today));
+        if (snap.exists()) {
+          puzzleData = snap.data();
+        } else {
+          console.warn("No puzzle found for today:", today);
+          if (today !== todayDefault) {
+            window.history.replaceState({}, '', '/');
+            startNewGame(todayDefault);
+            return;
+          }
         }
+      } catch (e) {
+        console.error("Error fetching daily puzzle from Firestore:", e);
       }
-    } catch (e) {
-      console.error("Error fetching daily puzzle:", e);
     }
 
     if (puzzleData) {
-      // Data format in JSON: solution is string[]
-      const finalSolution: Grid = puzzleData.solution.map((row: string) => row.split(''));
+      // Handle both Firestore format (solution is string[]) and static data
+      const finalSolution: Grid = Array.isArray(puzzleData.solution[0])
+        ? puzzleData.solution
+        : puzzleData.solution.map((row: string) => row.split(''));
       const finalScrambleMoves: {type: 'row' | 'col', idx: number, dir: number}[] = puzzleData.scrambleMoves;
       
       const pNum = puzzleData.puzzleNumber || Math.floor((new Date(today + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
