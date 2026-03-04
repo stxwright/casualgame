@@ -310,7 +310,7 @@ export default function App() {
     ).join('\n');
 
     const url = `${window.location.origin}/${levelId}`;
-    const shareText = `${header}\n\n${gridEmojis}`;
+    const shareText = `${header}\n\n${gridEmojis}\n`;
 
     if (navigator.share) {
       navigator.share({
@@ -318,11 +318,11 @@ export default function App() {
         text: shareText,
         url: url
       }).catch(() => {
-        navigator.clipboard.writeText(`${shareText}\n\n${url}`);
+        navigator.clipboard.writeText(`${shareText}${url}`);
         showCopyFeedback();
       });
     } else {
-      navigator.clipboard.writeText(`${shareText}\n\n${url}`);
+      navigator.clipboard.writeText(`${shareText}${url}`);
       showCopyFeedback();
     }
   };
