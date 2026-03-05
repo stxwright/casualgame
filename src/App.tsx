@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, Share2, HelpCircle, History } from 'lucide-react';
-import { doc, getDoc } from 'firebase/firestore/lite';
-import { db } from './firebase';
 import { Grid, Move, Attempt, Feedback, GameState, MoveType } from './types';
 
 const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
@@ -35,11 +33,12 @@ export default function App() {
   const [currentAttemptFeedback, setCurrentAttemptFeedback] = useState<Feedback[]>([]);
   const [showCopied, setShowCopied] = useState(false);
 
+  const [allPuzzles, setAllPuzzles] = useState<Record<string, any> | null>(null);
+
   const startNewGame = useCallback(async (targetDate?: string) => {
     setIsLoading(true);
     setShowFutureModal(false);
     setShowPreArchiveModal(false);
-    let puzzleData: any = null;
     
     const now = new Date();
     const offset = now.getTimezoneOffset();
@@ -60,16 +59,20 @@ export default function App() {
       return;
     }
     
-    try {
-      const snap = await getDoc(doc(db, 'puzzles', dateToLoad));
-      if (snap.exists()) {
-        puzzleData = snap.data();
-      } else {
-        console.warn("No puzzle found for:", dateToLoad);
+    let puzzles = allPuzzles;
+    if (!puzzles) {
+      try {
+        const resp = await fetch('/puzzles.json');
+        puzzles = await resp.json();
+        setAllPuzzles(puzzles);
+      } catch (e) {
+        console.error("Error fetching puzzles:", e);
+        setIsLoading(false);
+        return;
       }
-    } catch (e) {
-      console.error("Error fetching daily puzzle:", e);
     }
+
+    const puzzleData = puzzles ? puzzles[dateToLoad] : null;
 
     if (puzzleData) {
       const finalSolution: Grid = puzzleData.solution.map((row: string) => row.split(''));
@@ -187,8 +190,12 @@ export default function App() {
       updateMeta('link[rel="canonical"]', 'href', url);
       updateMeta('meta[property="og:url"]', 'content', url);
       updateMeta('meta[property="og:title"]', 'content', title);
+      updateMeta('meta[property="og:description"]', 'content', "Shift rows and columns to spell 4 words across and 4 words down. A new challenge every day.");
+      updateMeta('meta[property="og:image"]', 'content', `${window.location.origin}/og/${levelId}.png`);
       updateMeta('meta[name="twitter:url"]', 'content', url);
       updateMeta('meta[name="twitter:title"]', 'content', title);
+      updateMeta('meta[name="twitter:description"]', 'content', "Shift rows and columns to spell 4 words across and 4 words down. A new challenge every day.");
+      updateMeta('meta[name="twitter:image"]', 'content', `${window.location.origin}/og/${levelId}.png`);
     }
   }, [puzzleNumber, levelId]);
 

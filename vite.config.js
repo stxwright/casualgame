@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 
 // SEO constants
 const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
-const SITE_URL = 'https://casualga.me/';
+const SITE_URL = process.env.VITE_SITE_URL || 'https://casualga.me/';
 
 function seoPlugin() {
   return {
@@ -19,8 +19,9 @@ function seoPlugin() {
       const now = new Date();
       const dateStr = now.toISOString().slice(0, 10);
       const puzzleNumber = Math.floor((new Date(dateStr + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const dateLabel = new Date(dateStr + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-      const title = `WordWrap #${puzzleNumber} — Daily Word Grid Puzzle Game | casualga.me`;
+      const title = `WordWrap #${puzzleNumber} (${dateLabel}) — Daily Word Grid Puzzle Game | casualga.me`;
       const description = "Shift rows and columns to arrange letters into four words across and four words down in this daily word puzzle. Challenge yourself with a new Wordwrap grid every day!";
 
       const structuredData = {
@@ -73,14 +74,14 @@ function seoPlugin() {
     <meta property="og:url" content="${SITE_URL}" />
     <meta property="og:title" content="${title}" />
     <meta property="og:description" content="${description}" />
-    <meta property="og:image" content="${SITE_URL}og-image.png" />
+    <meta property="og:image" content="${SITE_URL}og/${dateStr}.png" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="${SITE_URL}" />
     <meta name="twitter:title" content="${title}" />
     <meta name="twitter:description" content="${description}" />
-    <meta name="twitter:image" content="${SITE_URL}og-image.png" />
+    <meta name="twitter:image" content="${SITE_URL}og/${dateStr}.png" />
 
     <script type="application/ld+json">${JSON.stringify(structuredData)}</script>
     <script type="application/ld+json">${JSON.stringify(howToData)}</script>
@@ -136,7 +137,7 @@ export default defineConfig({
     tailwindcss(),
     seoPlugin()
   ],
-  base: './',
+  base: '/',
   server: {
     host: true
   }
