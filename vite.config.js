@@ -19,8 +19,9 @@ function seoPlugin() {
       const now = new Date();
       const dateStr = now.toISOString().slice(0, 10);
       const puzzleNumber = Math.floor((new Date(dateStr + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const dateLabel = new Date(dateStr + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-      const title = `WordWrap #${puzzleNumber} — Daily Word Grid Puzzle Game | casualga.me`;
+      const title = `WordWrap #${puzzleNumber} (${dateLabel}) — Daily Word Grid Puzzle Game | casualga.me`;
       const description = "Shift rows and columns to arrange letters into four words across and four words down in this daily word puzzle. Challenge yourself with a new Wordwrap grid every day!";
 
       const structuredData = {
