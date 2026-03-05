@@ -11,6 +11,7 @@ const DIST_PATH = path.join(__dirname, '..', 'dist');
 const OG_PATH = path.join(DIST_PATH, 'og');
 
 const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
+const SITE_URL = process.env.VITE_SITE_URL || 'https://casualga.me/';
 
 function shiftArray(arr, dir) {
   const newArr = [...arr];
@@ -160,8 +161,8 @@ async function generate() {
     const dateLabel = puzzleDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     const title = `WordWrap #${puzzleNumber} (${dateLabel}) — Daily Word Grid Puzzle Game | casualga.me`;
     const description = "Shift rows and columns to spell 4 words across and 4 words down. A new challenge every day.";
-    const url = `https://casualga.me/${date}`;
-    const imageUrl = `https://casualga.me/og/${date}.png`;
+    const url = `${SITE_URL}${date}`;
+    const imageUrl = `${SITE_URL}og/${date}.png`;
 
     let shellHtml = indexHtml;
 
@@ -193,7 +194,7 @@ async function generate() {
   // 4. Write sitemap.xml
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://casualga.me/</loc></url>
+  <url><loc>${SITE_URL}</loc></url>
   ${sitemapUrls.map(url => `  <url><loc>${url}</loc></url>`).join('\n')}
 </urlset>`;
   fs.writeFileSync(path.join(DIST_PATH, 'sitemap.xml'), sitemap);

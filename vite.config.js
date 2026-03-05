@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 
 // SEO constants
 const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
-const SITE_URL = 'https://casualga.me/';
+const SITE_URL = process.env.VITE_SITE_URL || 'https://casualga.me/';
 
 function seoPlugin() {
   return {
