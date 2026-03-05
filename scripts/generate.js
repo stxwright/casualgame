@@ -9,9 +9,40 @@ const __dirname = path.dirname(__filename);
 const MASTER_PUZZLES_PATH = path.join(__dirname, '..', 'puzzles.json');
 const DIST_PATH = path.join(__dirname, '..', 'dist');
 const OG_PATH = path.join(DIST_PATH, 'og');
-const PUZZLE_PATH = path.join(DIST_PATH, 'puzzle');
 
 const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
+
+function shiftArray(arr, dir) {
+  const newArr = [...arr];
+  if (dir === 1) newArr.unshift(newArr.pop());
+  else newArr.push(newArr.shift());
+  return newArr;
+}
+
+function shiftColumn(currentGrid, colIdx, dir) {
+  const newGrid = currentGrid.map(row => [...row]);
+  const col = newGrid.map(row => row[colIdx]);
+  const shiftedCol = shiftArray(col, dir);
+  for (let i = 0; i < 4; i++) newGrid[i][colIdx] = shiftedCol[i];
+  return newGrid;
+}
+
+function drawArrow(ctx, x, y, size, dir) {
+  ctx.save();
+  ctx.translate(x, y);
+  if (dir === 'up') ctx.rotate(0);
+  if (dir === 'right') ctx.rotate(Math.PI / 2);
+  if (dir === 'down') ctx.rotate(Math.PI);
+  if (dir === 'left') ctx.rotate(-Math.PI / 2);
+
+  ctx.beginPath();
+  ctx.moveTo(0, -size / 2.5);
+  ctx.lineTo(size / 2.5, size / 4);
+  ctx.lineTo(-size / 2.5, size / 4);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
 
 async function generate() {
   if (!fs.existsSync(DIST_PATH)) {
@@ -27,9 +58,7 @@ async function generate() {
   const publishedPuzzles = {};
   const sitemapUrls = [];
 
-  // Ensure directories exist
   if (!fs.existsSync(OG_PATH)) fs.mkdirSync(OG_PATH, { recursive: true });
-  if (!fs.existsSync(PUZZLE_PATH)) fs.mkdirSync(PUZZLE_PATH, { recursive: true });
 
   const indexHtml = fs.readFileSync(path.join(DIST_PATH, 'index.html'), 'utf8');
 
@@ -42,6 +71,16 @@ async function generate() {
     publishedPuzzles[date] = data;
     const puzzleNumber = Math.floor((puzzleDate.getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
+    // SCRAMBLE THE GRID FOR OG IMAGE
+    let scrambledGrid = data.solution.map(row => row.split(''));
+    data.scrambleMoves.forEach(move => {
+      if (move.type === 'row') {
+        scrambledGrid[move.idx] = shiftArray(scrambledGrid[move.idx], move.dir);
+      } else {
+        scrambledGrid = shiftColumn(scrambledGrid, move.idx, move.dir);
+      }
+    });
+
     // 1. Generate OG Image
     const canvas = createCanvas(600, 315);
     const ctx = canvas.getContext('2d');
@@ -51,20 +90,19 @@ async function generate() {
     ctx.fillRect(0, 0, 600, 315);
 
     // Draw Grid
-    const tileSize = 50;
-    const gap = 5;
-    const boardPadding = 10;
+    const tileSize = 45;
+    const gap = 6;
+    const boardPadding = 12;
     const boardSize = (tileSize * 4) + (gap * 3) + (boardPadding * 2);
-    const startX = (600 - boardSize) / 2;
+    const startX = 320;
     const startY = (315 - boardSize) / 2;
 
     ctx.fillStyle = '#334155'; // slate-700
     ctx.beginPath();
-    ctx.roundRect(startX, startY, boardSize, boardSize, 8);
+    ctx.roundRect(startX, startY, boardSize, boardSize, 12);
     ctx.fill();
 
-    const solution = data.solution;
-    ctx.font = 'bold 30px sans-serif';
+    ctx.font = 'bold 28px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
@@ -75,26 +113,45 @@ async function generate() {
 
         ctx.fillStyle = '#475569'; // slate-600
         ctx.beginPath();
-        ctx.roundRect(x, y, tileSize, tileSize, 4);
+        ctx.roundRect(x, y, tileSize, tileSize, 6);
         ctx.fill();
 
         ctx.fillStyle = '#ffffff';
-        ctx.fillText(solution[r][c], x + tileSize / 2, y + tileSize / 2);
+        ctx.fillText(scrambledGrid[r][c], x + tileSize / 2, y + tileSize / 2);
       }
     }
 
-    // Title
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 24px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('WordWrap', 20, 40);
+    // DRAW SHIFTERS
+    ctx.fillStyle = '#475569';
+    const btnSize = 18;
+    for (let i = 0; i < 4; i++) {
+      const colX = startX + boardPadding + i * (tileSize + gap) + tileSize / 2;
+      const rowY = startY + boardPadding + i * (tileSize + gap) + tileSize / 2;
 
+      // Top
+      drawArrow(ctx, colX, startY, btnSize, 'up');
+      // Bottom
+      drawArrow(ctx, colX, startY + boardSize, btnSize, 'down');
+      // Left
+      drawArrow(ctx, startX, rowY, btnSize, 'left');
+      // Right
+      drawArrow(ctx, startX + boardSize, rowY, btnSize, 'right');
+    }
+
+    // Header Branding
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 42px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Word', 40, 140);
+    const wordWidth = ctx.measureText('Word').width;
     ctx.fillStyle = '#60a5fa'; // blue-400
-    ctx.fillText('Wrap', 20 + ctx.measureText('Word').width, 40);
+    ctx.fillText('Wrap', 40 + wordWidth, 140);
 
     ctx.fillStyle = '#94a3b8'; // slate-400
+    ctx.font = 'bold 24px sans-serif';
+    ctx.fillText(`#${puzzleNumber}`, 40, 180);
     ctx.font = '16px sans-serif';
-    ctx.fillText(`#${puzzleNumber} — ${date}`, 20, 70);
+    ctx.fillText(date, 40, 210);
 
     const buffer = canvas.toBuffer('image/png');
     fs.writeFileSync(path.join(OG_PATH, `${date}.png`), buffer);
@@ -107,19 +164,21 @@ async function generate() {
     const imageUrl = `https://casualga.me/og/${date}.png`;
 
     let shellHtml = indexHtml;
-    const metaTags = `
-    <meta property="og:title" content="${title}" />
-    <meta property="og:description" content="${description}" />
-    <meta property="og:image" content="${imageUrl}" />
-    <meta property="og:url" content="${url}" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="${title}" />
-    <meta name="twitter:description" content="${description}" />
-    <meta name="twitter:image" content="${imageUrl}" />
-    <link rel="canonical" href="${url}" />
-    `;
 
-    shellHtml = shellHtml.replace('</head>', `${metaTags}</head>`);
+    // REPLACE existing tags to avoid duplication
+    shellHtml = shellHtml.replace(/<title>.*?<\/title>/, `<title>${title}</title>`);
+    shellHtml = shellHtml.replace(/<meta name="description" content=".*?" \/>/, `<meta name="description" content="${description}" />`);
+    shellHtml = shellHtml.replace(/<link rel="canonical" href=".*?" \/>/, `<link rel="canonical" href="${url}" />`);
+
+    // Replace all OG and Twitter tags
+    shellHtml = shellHtml.replace(/<meta property="og:title" content=".*?" \/>/g, `<meta property="og:title" content="${title}" />`);
+    shellHtml = shellHtml.replace(/<meta property="og:description" content=".*?" \/>/g, `<meta property="og:description" content="${description}" />`);
+    shellHtml = shellHtml.replace(/<meta property="og:image" content=".*?" \/>/g, `<meta property="og:image" content="${imageUrl}" />`);
+    shellHtml = shellHtml.replace(/<meta property="og:url" content=".*?" \/>/g, `<meta property="og:url" content="${url}" />`);
+    shellHtml = shellHtml.replace(/<meta name="twitter:title" content=".*?" \/>/g, `<meta name="twitter:title" content="${title}" />`);
+    shellHtml = shellHtml.replace(/<meta name="twitter:description" content=".*?" \/>/g, `<meta name="twitter:description" content="${description}" />`);
+    shellHtml = shellHtml.replace(/<meta name="twitter:image" content=".*?" \/>/g, `<meta name="twitter:image" content="${imageUrl}" />`);
+    shellHtml = shellHtml.replace(/<meta name="twitter:url" content=".*?" \/>/g, `<meta name="twitter:url" content="${url}" />`);
 
     const dateDir = path.join(DIST_PATH, date);
     if (!fs.existsSync(dateDir)) fs.mkdirSync(dateDir, { recursive: true });
