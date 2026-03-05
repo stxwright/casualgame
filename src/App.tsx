@@ -187,8 +187,8 @@ export default function App() {
       updateMeta('link[rel="canonical"]', 'href', url);
       updateMeta('meta[property="og:url"]', 'content', url);
       updateMeta('meta[property="og:title"]', 'content', title);
-      updateMeta('meta[property="twitter:url"]', 'content', url);
-      updateMeta('meta[property="twitter:title"]', 'content', title);
+      updateMeta('meta[name="twitter:url"]', 'content', url);
+      updateMeta('meta[name="twitter:title"]', 'content', title);
     }
   }, [puzzleNumber, levelId]);
 
