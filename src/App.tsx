@@ -190,8 +190,12 @@ export default function App() {
       updateMeta('link[rel="canonical"]', 'href', url);
       updateMeta('meta[property="og:url"]', 'content', url);
       updateMeta('meta[property="og:title"]', 'content', title);
+      updateMeta('meta[property="og:description"]', 'content', "Shift rows and columns to spell 4 words across and 4 words down. A new challenge every day.");
+      updateMeta('meta[property="og:image"]', 'content', `${window.location.origin}/og/${levelId}.png`);
       updateMeta('meta[name="twitter:url"]', 'content', url);
       updateMeta('meta[name="twitter:title"]', 'content', title);
+      updateMeta('meta[name="twitter:description"]', 'content', "Shift rows and columns to spell 4 words across and 4 words down. A new challenge every day.");
+      updateMeta('meta[name="twitter:image"]', 'content', `${window.location.origin}/og/${levelId}.png`);
     }
   }, [puzzleNumber, levelId]);
 

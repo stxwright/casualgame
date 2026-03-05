@@ -164,22 +164,26 @@ async function generate() {
     const url = `${SITE_URL}${date}`;
     const imageUrl = `${SITE_URL}og/${date}.png`;
 
-    let shellHtml = indexHtml;
+    // Ensure absolute URLs are correct by replacing the production base with the environment-specific SITE_URL
+    let shellHtml = indexHtml.split('https://casualga.me/').join(SITE_URL);
 
-    // REPLACE existing tags to avoid duplication
+    // Update title and description for this specific date
     shellHtml = shellHtml.replace(/<title>.*?<\/title>/, `<title>${title}</title>`);
-    shellHtml = shellHtml.replace(/<meta name="description" content=".*?" \/>/, `<meta name="description" content="${description}" />`);
-    shellHtml = shellHtml.replace(/<link rel="canonical" href=".*?" \/>/, `<link rel="canonical" href="${url}" />`);
-
-    // Replace all OG and Twitter tags
     shellHtml = shellHtml.replace(/<meta property="og:title" content=".*?" \/>/g, `<meta property="og:title" content="${title}" />`);
-    shellHtml = shellHtml.replace(/<meta property="og:description" content=".*?" \/>/g, `<meta property="og:description" content="${description}" />`);
-    shellHtml = shellHtml.replace(/<meta property="og:image" content=".*?" \/>/g, `<meta property="og:image" content="${imageUrl}" />`);
-    shellHtml = shellHtml.replace(/<meta property="og:url" content=".*?" \/>/g, `<meta property="og:url" content="${url}" />`);
     shellHtml = shellHtml.replace(/<meta name="twitter:title" content=".*?" \/>/g, `<meta name="twitter:title" content="${title}" />`);
+
+    shellHtml = shellHtml.replace(/<meta name="description" content=".*?" \/>/, `<meta name="description" content="${description}" />`);
+    shellHtml = shellHtml.replace(/<meta property="og:description" content=".*?" \/>/g, `<meta property="og:description" content="${description}" />`);
     shellHtml = shellHtml.replace(/<meta name="twitter:description" content=".*?" \/>/g, `<meta name="twitter:description" content="${description}" />`);
-    shellHtml = shellHtml.replace(/<meta name="twitter:image" content=".*?" \/>/g, `<meta name="twitter:image" content="${imageUrl}" />`);
+
+    // Ensure the canonical and URL tags point to the specific puzzle route
+    shellHtml = shellHtml.replace(/<link rel="canonical" href=".*?" \/>/, `<link rel="canonical" href="${url}" />`);
+    shellHtml = shellHtml.replace(/<meta property="og:url" content=".*?" \/>/g, `<meta property="og:url" content="${url}" />`);
     shellHtml = shellHtml.replace(/<meta name="twitter:url" content=".*?" \/>/g, `<meta name="twitter:url" content="${url}" />`);
+
+    // Ensure OG image points to the correct date-specific PNG
+    shellHtml = shellHtml.replace(/<meta property="og:image" content=".*?" \/>/g, `<meta property="og:image" content="${imageUrl}" />`);
+    shellHtml = shellHtml.replace(/<meta name="twitter:image" content=".*?" \/>/g, `<meta name="twitter:image" content="${imageUrl}" />`);
 
     const dateDir = path.join(DIST_PATH, date);
     if (!fs.existsSync(dateDir)) fs.mkdirSync(dateDir, { recursive: true });
