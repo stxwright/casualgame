@@ -52,9 +52,11 @@ async function generate() {
   }
 
   const puzzles = JSON.parse(fs.readFileSync(MASTER_PUZZLES_PATH, 'utf8'));
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
-  const todayStr = today.toISOString().split('T')[0];
+  const now = new Date();
+  // GMT+14 is the earliest timezone, so we include any puzzle that has started there
+  const earliestTimezoneOffset = 14 * 60 * 60 * 1000;
+  const latestDate = new Date(now.getTime() + earliestTimezoneOffset);
+  const latestStr = latestDate.toISOString().split('T')[0];
 
   const publishedPuzzles = {};
   const sitemapUrls = [];
@@ -64,7 +66,7 @@ async function generate() {
   const indexHtml = fs.readFileSync(path.join(DIST_PATH, 'index.html'), 'utf8');
 
   for (const [date, data] of Object.entries(puzzles)) {
-    if (date > todayStr) continue;
+    if (date > latestStr) continue;
 
     const puzzleDate = new Date(date + 'T00:00:00Z');
     if (puzzleDate < LAUNCH_DATE) continue;
