@@ -61,13 +61,18 @@ async function generate() {
   const latestStr = latestDate.toISOString().split('T')[0];
 
   const publishedPuzzles = {};
-  const sitemapUrls = [];
+  const sitemapEntries = [];
+  const archiveLinks = [];
 
   if (!fs.existsSync(OG_PATH)) fs.mkdirSync(OG_PATH, { recursive: true });
 
   const indexHtml = fs.readFileSync(path.join(DIST_PATH, 'index.html'), 'utf8');
 
-  for (const [date, data] of Object.entries(puzzles)) {
+  // Sort puzzles by date descending for archive display
+  const sortedDates = Object.keys(puzzles).sort((a, b) => b.localeCompare(a));
+
+  for (const date of sortedDates) {
+    const data = puzzles[date];
     if (date > latestStr) continue;
 
     const puzzleDate = new Date(date + 'T00:00:00Z');
@@ -193,17 +198,70 @@ async function generate() {
     if (!fs.existsSync(dateDir)) fs.mkdirSync(dateDir, { recursive: true });
     fs.writeFileSync(path.join(dateDir, 'index.html'), shellHtml);
 
-    sitemapUrls.push(url);
+    sitemapEntries.push({ url, lastmod: date });
+    archiveLinks.push({ url: `/${date}`, title: `WordWrap #${puzzleNumber} (${dateLabel})` });
   }
 
-  // 3. Write filtered puzzles.json
-  fs.writeFileSync(path.join(DIST_PATH, 'puzzles.json'), JSON.stringify(publishedPuzzles));
+  // 3. Write filtered puzzles.json (chronological order)
+  const chronologicalPuzzles = {};
+  Object.keys(publishedPuzzles).sort().forEach(date => {
+    chronologicalPuzzles[date] = publishedPuzzles[date];
+  });
+  fs.writeFileSync(path.join(DIST_PATH, 'puzzles.json'), JSON.stringify(chronologicalPuzzles));
 
-  // 4. Write sitemap.xml
+  // 4. Generate Archive Page
+  const archiveTitle = "Archive — WordWrap Daily Word Grid Puzzle Game";
+  const archiveDescription = "Browse the full history of WordWrap daily puzzles. Play any puzzle from our archive!";
+  const archiveUrl = `${SITE_URL}archive`;
+
+  let archiveHtml = indexHtml.split('https://casualga.me/').join(SITE_URL);
+  archiveHtml = archiveHtml.replace(/<title>.*?<\/title>/, `<title>${archiveTitle}</title>`);
+  archiveHtml = archiveHtml.replace(/<meta name="description" content=".*?" \/>/, `<meta name="description" content="${archiveDescription}" />`);
+  archiveHtml = archiveHtml.replace(/<meta property="og:title" content=".*?" \/>/g, `<meta property="og:title" content="${archiveTitle}" />`);
+  archiveHtml = archiveHtml.replace(/<meta property="og:description" content=".*?" \/>/g, `<meta property="og:description" content="${archiveDescription}" />`);
+  archiveHtml = archiveHtml.replace(/<meta property="og:url" content=".*?" \/>/g, `<meta property="og:url" content="${archiveUrl}" />`);
+  archiveHtml = archiveHtml.replace(/<meta name="twitter:title" content=".*?" \/>/g, `<meta name="twitter:title" content="${archiveTitle}" />`);
+  archiveHtml = archiveHtml.replace(/<meta name="twitter:description" content=".*?" \/>/g, `<meta name="twitter:description" content="${archiveDescription}" />`);
+  archiveHtml = archiveHtml.replace(/<meta name="twitter:url" content=".*?" \/>/g, `<meta name="twitter:url" content="${archiveUrl}" />`);
+
+  // Add a hidden list of links for SEO
+  const linksHtml = `
+    <div id="seo-archive" style="display:none">
+      <h1>WordWrap Puzzle Archive</h1>
+      <ul>
+        ${archiveLinks.map(link => `<li><a href="${link.url}">${link.title}</a></li>`).join('\n        ')}
+      </ul>
+    </div>
+  `;
+  // More robust replacement for body tag
+  archiveHtml = archiveHtml.replace(/(<body[^>]*>)/i, `$1${linksHtml}`);
+
+  const archiveDir = path.join(DIST_PATH, 'archive');
+  if (!fs.existsSync(archiveDir)) fs.mkdirSync(archiveDir, { recursive: true });
+  fs.writeFileSync(path.join(archiveDir, 'index.html'), archiveHtml);
+
+  // 5. Write sitemap.xml
+  const todayIso = now.toISOString().split('T')[0];
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>${SITE_URL}</loc></url>
-  ${sitemapUrls.map(url => `  <url><loc>${url}</loc></url>`).join('\n')}
+  <url>
+    <loc>${SITE_URL}</loc>
+    <lastmod>${todayIso}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>${archiveUrl}</loc>
+    <lastmod>${todayIso}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  ${sitemapEntries.map(entry => `  <url>
+    <loc>${entry.url}</loc>
+    <lastmod>${entry.lastmod}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>`).join('\n')}
 </urlset>`;
   fs.writeFileSync(path.join(DIST_PATH, 'sitemap.xml'), sitemap);
 
