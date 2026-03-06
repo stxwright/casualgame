@@ -52,9 +52,13 @@ async function generate() {
   }
 
   const puzzles = JSON.parse(fs.readFileSync(MASTER_PUZZLES_PATH, 'utf8'));
-  const today = new Date();
-  today.setUTCHours(0, 0, 0, 0);
-  const todayStr = today.toISOString().split('T')[0];
+  const now = new Date();
+  // We include any puzzle that will be "today" within the next 24 hours.
+  // This ensures that when the daily cron runs at 09:00 UTC, it includes
+  // the puzzle for the next calendar day (which starts at 10:00 UTC in GMT+14).
+  const publicationBuffer = 24 * 60 * 60 * 1000;
+  const latestDate = new Date(now.getTime() + publicationBuffer);
+  const latestStr = latestDate.toISOString().split('T')[0];
 
   const publishedPuzzles = {};
   const sitemapUrls = [];
@@ -64,7 +68,7 @@ async function generate() {
   const indexHtml = fs.readFileSync(path.join(DIST_PATH, 'index.html'), 'utf8');
 
   for (const [date, data] of Object.entries(puzzles)) {
-    if (date > todayStr) continue;
+    if (date > latestStr) continue;
 
     const puzzleDate = new Date(date + 'T00:00:00Z');
     if (puzzleDate < LAUNCH_DATE) continue;
