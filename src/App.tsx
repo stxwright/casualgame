@@ -39,6 +39,11 @@ export default function App() {
     setIsLoading(true);
     setShowFutureModal(false);
     setShowPreArchiveModal(false);
+
+    const path = window.location.pathname.replace(/^\/|\/$/g, '');
+    if (path === 'archive') {
+      setShowArchiveModal(true);
+    }
     
     const now = new Date();
     const offset = now.getTimezoneOffset();
@@ -176,10 +181,15 @@ export default function App() {
   useEffect(() => {
     if (puzzleNumber > 0 && levelId) {
       const dateLabel = new Date(levelId + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-      const title = `WordWrap #${puzzleNumber} (${dateLabel}) — Daily Word Grid Puzzle Game | casualga.me`;
+      const isArchive = window.location.pathname.replace(/^\/|\/$/g, '') === 'archive';
+      const title = isArchive
+        ? "Archive — WordWrap Daily Word Grid Puzzle Game"
+        : `WordWrap #${puzzleNumber} (${dateLabel}) — Daily Word Grid Puzzle Game | casualga.me`;
       document.title = title;
 
-      const url = `${window.location.origin}/${levelId}`;
+      const url = isArchive
+        ? `${window.location.origin}/archive`
+        : `${window.location.origin}/${levelId}`;
 
       // Update meta tags dynamically
       const updateMeta = (selector: string, attr: string, value: string) => {
@@ -188,13 +198,19 @@ export default function App() {
       };
 
       updateMeta('link[rel="canonical"]', 'href', url);
+
+      const description = isArchive
+        ? "Browse the full history of WordWrap daily puzzles. Play any puzzle from our archive!"
+        : "Shift rows and columns to spell 4 words across and 4 words down. A new challenge every day.";
+
+      updateMeta('meta[name="description"]', 'content', description);
       updateMeta('meta[property="og:url"]', 'content', url);
       updateMeta('meta[property="og:title"]', 'content', title);
-      updateMeta('meta[property="og:description"]', 'content', "Shift rows and columns to spell 4 words across and 4 words down. A new challenge every day.");
+      updateMeta('meta[property="og:description"]', 'content', description);
       updateMeta('meta[property="og:image"]', 'content', `${window.location.origin}/og/${levelId}.png`);
       updateMeta('meta[name="twitter:url"]', 'content', url);
       updateMeta('meta[name="twitter:title"]', 'content', title);
-      updateMeta('meta[name="twitter:description"]', 'content', "Shift rows and columns to spell 4 words across and 4 words down. A new challenge every day.");
+      updateMeta('meta[name="twitter:description"]', 'content', description);
       updateMeta('meta[name="twitter:image"]', 'content', `${window.location.origin}/og/${levelId}.png`);
     }
   }, [puzzleNumber, levelId]);
@@ -566,7 +582,16 @@ export default function App() {
       {/* ARCHIVE MODAL */}
       {showArchiveModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/95 backdrop-blur-sm animate-in fade-in duration-300">
-          <button onClick={() => setShowArchiveModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-[110]">
+          <button
+            onClick={() => {
+              setShowArchiveModal(false);
+              if (window.location.pathname.includes('archive')) {
+                window.history.pushState({}, '', '/');
+              }
+            }}
+            aria-label="Close"
+            className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-[110]"
+          >
             <X style={{ width: ICON_SIZE, height: ICON_SIZE }} />
           </button>
           <div className="flex flex-col h-full w-full max-w-lg p-6" style={{ minWidth: 'min(90vw, calc(var(--s) * 5))' }}>
