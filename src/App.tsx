@@ -183,7 +183,7 @@ export default function App() {
 
   useEffect(() => {
     if (puzzleNumber > 0 && levelId) {
-      const dateLabel = new Date(levelId + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      const dateLabel = new Date(levelId + 'T12:00:00Z').toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' });
       const isArchive = window.location.pathname.replace(/^\/|\/$/g, '') === 'archive';
       const title = isArchive
         ? "Archive — WordWrap Daily Word Grid Puzzle Game"
@@ -633,7 +633,7 @@ export default function App() {
                 >
                   <div className="flex flex-col items-start">
                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Puzzle #{p.number}</span>
-                    <span className="text-white font-bold">{new Date(p.date + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                    <span className="text-white font-bold">{new Date(p.date + 'T12:00:00Z').toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                   </div>
                   {p.isSolved && (
                     <div className="bg-green-500/20 p-1.5 rounded-full">
