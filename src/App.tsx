@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, Share2, HelpCircle, History } from 'lucide-react';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from './firebase';
 import { Grid, Move, Attempt, Feedback, GameState, MoveType } from './types';
 
 const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
@@ -159,6 +161,7 @@ export default function App() {
       }
 
       setLevelId(dateToLoad);
+      logEvent(analytics, 'level_start', { level_name: dateToLoad, puzzle_number: pNum });
     } else {
       setGrid(Array(4).fill(null).map(() => Array(4).fill(' ')));
       setSolution(null);
@@ -287,6 +290,7 @@ export default function App() {
     if (won) {
       setIsSolved(true);
       setAttempts(prev => [...prev, { moves: newAttemptMoves, feedback: newAttemptFeedback }]);
+      logEvent(analytics, 'level_end', { level_name: levelId as string, success: true, attempts: attempts.length + 1 });
       setTimeout(() => setShowModal(true), 2000);
     } else if (newMovesRemaining === 0) {
       const finishedAttempt = { moves: newAttemptMoves, feedback: newAttemptFeedback };
@@ -294,6 +298,7 @@ export default function App() {
       if (attempts.length >= 5) {
         setAttempts(prev => [...prev, finishedAttempt]);
         if (solution) setGrid(solution);
+        logEvent(analytics, 'level_end', { level_name: levelId as string, success: false, attempts: 6 });
         setTimeout(() => setShowFailureModal(true), 2000);
       } else {
         setTimeout(() => {
@@ -311,6 +316,11 @@ export default function App() {
   };
 
   const shareResult = () => {
+    logEvent(analytics, 'share', {
+      method: navigator.share ? 'web_share' : 'clipboard',
+      content_type: 'puzzle_result',
+      item_id: levelId as string
+    });
     const feedbackToEmoji = (f: Feedback) => {
       if (f === 'correct') return '🟩';
       if (f === 'partial') return '🟨';
