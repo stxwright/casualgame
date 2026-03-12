@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createCanvas } from 'canvas';
+import { LAUNCH_DATE, getPuzzleNumber, formatDate } from '../src/dateUtils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,7 +11,6 @@ const MASTER_PUZZLES_PATH = path.join(__dirname, '..', 'puzzles.json');
 const DIST_PATH = path.join(__dirname, '..', 'dist');
 const OG_PATH = path.join(DIST_PATH, 'og');
 
-const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
 const SITE_URL = process.env.VITE_SITE_URL || 'https://casualga.me/';
 
 function shiftArray(arr, dir) {
@@ -79,7 +79,7 @@ async function generate() {
     if (puzzleDate < LAUNCH_DATE) continue;
 
     publishedPuzzles[date] = data;
-    const puzzleNumber = Math.floor((puzzleDate.getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const puzzleNumber = getPuzzleNumber(puzzleDate);
 
     // SCRAMBLE THE GRID FOR OG IMAGE
     let scrambledGrid = data.solution.map(row => row.split(''));
@@ -167,7 +167,7 @@ async function generate() {
     fs.writeFileSync(path.join(OG_PATH, `${date}.png`), buffer);
 
     // 2. Generate HTML Shell
-    const dateLabel = puzzleDate.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' });
+    const dateLabel = formatDate(puzzleDate);
     const title = `WordWrap #${puzzleNumber} (${dateLabel}) — Daily Word Grid Puzzle Game | casualga.me`;
     const description = "Shift rows and columns to spell 4 words across and 4 words down. A new challenge every day.";
     const url = `${SITE_URL}${date}`;

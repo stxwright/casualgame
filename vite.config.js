@@ -4,12 +4,12 @@ import tailwindcss from '@tailwindcss/vite'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { LAUNCH_DATE, getPuzzleNumber, formatDate } from './src/dateUtils'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // SEO constants
-const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
 const SITE_URL = process.env.VITE_SITE_URL || 'https://casualga.me/';
 
 function seoPlugin() {
@@ -18,8 +18,8 @@ function seoPlugin() {
     transformIndexHtml(html) {
       const now = new Date();
       const dateStr = now.toISOString().slice(0, 10);
-      const puzzleNumber = Math.floor((new Date(dateStr + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-      const dateLabel = new Date(dateStr + 'T12:00:00Z').toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' });
+      const puzzleNumber = getPuzzleNumber(dateStr);
+      const dateLabel = formatDate(dateStr);
 
       const title = `WordWrap #${puzzleNumber} (${dateLabel}) — Daily Word Grid Puzzle Game | casualga.me`;
       const description = "Shift rows and columns to arrange letters into four words across and four words down in this daily word puzzle. Challenge yourself with a new Wordwrap grid every day!";
@@ -90,7 +90,7 @@ function seoPlugin() {
       const staticShell = `
       <div id="seo-content" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;">
         <h1>WordWrap #${puzzleNumber}</h1>
-        <p>Today is ${new Date(dateStr + 'T12:00:00Z').toLocaleDateString('en-GB', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
+        <p>Today is ${formatDate(dateStr, { month: 'long' })}.</p>
         <p>${description}</p>
         <h2>How to Play</h2>
         <ul>
