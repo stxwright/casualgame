@@ -167,7 +167,7 @@ async function generate() {
     fs.writeFileSync(path.join(OG_PATH, `${date}.png`), buffer);
 
     // 2. Generate HTML Shell
-    const dateLabel = puzzleDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const dateLabel = puzzleDate.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' });
     const title = `WordWrap #${puzzleNumber} (${dateLabel}) — Daily Word Grid Puzzle Game | casualga.me`;
     const description = "Shift rows and columns to spell 4 words across and 4 words down. A new challenge every day.";
     const url = `${SITE_URL}${date}`;

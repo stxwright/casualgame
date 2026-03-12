@@ -90,7 +90,7 @@ function seoPlugin() {
       const staticShell = `
       <div id="seo-content" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;">
         <h1>WordWrap #${puzzleNumber}</h1>
-        <p>Today is ${new Date(dateStr + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
+        <p>Today is ${new Date(dateStr + 'T12:00:00Z').toLocaleDateString('en-GB', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
         <p>${description}</p>
         <h2>How to Play</h2>
         <ul>
