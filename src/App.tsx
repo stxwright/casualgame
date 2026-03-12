@@ -3,8 +3,7 @@ import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, Share2, H
 import { logEvent } from 'firebase/analytics';
 import { analytics } from './firebase';
 import { Grid, Move, Attempt, Feedback, GameState, MoveType } from './types';
-
-const LAUNCH_DATE = new Date('2026-02-14T00:00:00Z');
+import { LAUNCH_DATE, getPuzzleNumber, formatDate } from './dateUtils';
 
 const getPuzzleDateFromUrl = () => {
   const path = window.location.pathname.replace(/^\/|\/$/g, '');
@@ -85,7 +84,7 @@ export default function App() {
       const finalSolution: Grid = puzzleData.solution.map((row: string) => row.split(''));
       const finalScrambleMoves: {type: 'row' | 'col', idx: number, dir: number}[] = puzzleData.scrambleMoves;
       
-      const pNum = Math.floor((new Date(dateToLoad + 'T00:00:00Z').getTime() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const pNum = getPuzzleNumber(dateToLoad);
       setPuzzleNumber(pNum);
 
       const solMoves: Move[] = finalScrambleMoves.map(m => ({
@@ -183,7 +182,7 @@ export default function App() {
 
   useEffect(() => {
     if (puzzleNumber > 0 && levelId) {
-      const dateLabel = new Date(levelId + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      const dateLabel = formatDate(levelId as string);
       const isArchive = window.location.pathname.replace(/^\/|\/$/g, '') === 'archive';
       const title = isArchive
         ? "Archive — WordWrap Daily Word Grid Puzzle Game"
@@ -380,7 +379,7 @@ export default function App() {
     let current = new Date(end);
     while (current >= start) {
       const dateStr = current.toISOString().slice(0, 10);
-      const pNum = Math.floor((current.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      const pNum = getPuzzleNumber(current);
 
       const savedStateStr = localStorage.getItem(`wordwrap_game_state_${dateStr}`);
       let isSolvedForDate = false;
@@ -633,7 +632,7 @@ export default function App() {
                 >
                   <div className="flex flex-col items-start">
                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Puzzle #{p.number}</span>
-                    <span className="text-white font-bold">{new Date(p.date + 'T12:00:00Z').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                    <span className="text-white font-bold">{formatDate(p.date)}</span>
                   </div>
                   {p.isSolved && (
                     <div className="bg-green-500/20 p-1.5 rounded-full">
