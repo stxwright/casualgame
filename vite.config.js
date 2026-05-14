@@ -137,7 +137,7 @@ export default defineConfig({
     tailwindcss(),
     seoPlugin()
   ],
-  base: '/',
+  base: './',
   server: {
     host: true
   }

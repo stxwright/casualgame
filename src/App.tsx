@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, Share2, HelpCircle, History } from 'lucide-react';
-import { logEvent } from 'firebase/analytics';
-import { analytics } from './firebase';
 import { Grid, Move, Attempt, Feedback, GameState, MoveType } from './types';
 import { LAUNCH_DATE, getPuzzleNumber, formatDate } from './dateUtils';
 
