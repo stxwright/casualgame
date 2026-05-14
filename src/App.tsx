@@ -158,7 +158,6 @@ export default function App() {
       }
 
       setLevelId(dateToLoad);
-      logEvent(analytics, 'level_start', { level_name: dateToLoad, puzzle_number: pNum });
     } else {
       setGrid(Array(4).fill(null).map(() => Array(4).fill(' ')));
       setSolution(null);
