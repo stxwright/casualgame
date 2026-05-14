@@ -66,7 +66,7 @@ export default function App() {
     let puzzles = allPuzzles;
     if (!puzzles) {
       try {
-        const resp = await fetch('/casualgame/puzzles.json');
+        const resp = await fetch(`${import.meta.env.BASE_URL}puzzles.json`);
         puzzles = await resp.json();
         setAllPuzzles(puzzles);
       } catch (e) {
