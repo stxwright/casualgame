@@ -1,28 +1,16 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Trophy, X, Share2, HelpCircle, History } from 'lucide-react';
 import { Grid, Move, Attempt, Feedback, GameState, MoveType } from './types';
-import { LAUNCH_DATE, getPuzzleNumber, formatDate } from './dateUtils';
-
-const getPuzzleDateFromUrl = () => {
-  const path = window.location.pathname.replace(/^\/|\/$/g, '');
-  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-  return dateRegex.test(path) ? path : null;
-};
 
 export default function App() {
   const [grid, setGrid] = useState<Grid>([[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' '],[' ',' ',' ',' ']]);
   const [initialGrid, setInitialGrid] = useState<Grid | null>(null);
   const [solution, setSolution] = useState<Grid | null>(null);
-  const [levelId, setLevelId] = useState<string | number>(0);
-  const [puzzleNumber, setPuzzleNumber] = useState<number>(0);
+  const [levelId, setLevelId] = useState<number | null>(null);
   const [movesRemaining, setMovesRemaining] = useState(2);
   const [isSolved, setIsSolved] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showFailureModal, setShowFailureModal] = useState(false);
-  const [showHelpModal, setShowHelpModal] = useState(false);
-  const [showArchiveModal, setShowArchiveModal] = useState(false);
-  const [showFutureModal, setShowFutureModal] = useState(false);
-  const [showPreArchiveModal, setShowPreArchiveModal] = useState(false);
   const [lastMoveType, setLastMoveType] = useState<MoveType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -32,37 +20,11 @@ export default function App() {
   const [currentAttemptFeedback, setCurrentAttemptFeedback] = useState<Feedback[]>([]);
   const [showCopied, setShowCopied] = useState(false);
 
-  const [allPuzzles, setAllPuzzles] = useState<Record<string, any> | null>(null);
+  const [allPuzzles, setAllPuzzles] = useState<any[] | null>(null);
 
-  const startNewGame = useCallback(async (targetDate?: string) => {
+  const startNewGame = useCallback(async (targetIdx?: number) => {
     setIsLoading(true);
-    setShowFutureModal(false);
-    setShowPreArchiveModal(false);
 
-    const path = window.location.pathname.replace(/^\/|\/$/g, '');
-    if (path === 'archive') {
-      setShowArchiveModal(true);
-    }
-    
-    const now = new Date();
-    const offset = now.getTimezoneOffset();
-    const localDate = new Date(now.getTime() - (offset * 60 * 1000));
-    const todayStr = localDate.toISOString().slice(0, 10);
-
-    const dateToLoad = targetDate || getPuzzleDateFromUrl() || todayStr;
-
-    if (dateToLoad > todayStr) {
-      setShowFutureModal(true);
-      setIsLoading(false);
-      return;
-    }
-
-    if (new Date(dateToLoad + 'T00:00:00Z') < LAUNCH_DATE) {
-      setShowPreArchiveModal(true);
-      setIsLoading(false);
-      return;
-    }
-    
     let puzzles = allPuzzles;
     if (!puzzles) {
       try {
@@ -76,15 +38,13 @@ export default function App() {
       }
     }
 
-    const puzzleData = puzzles ? puzzles[dateToLoad] : null;
+    const idx = targetIdx ?? (puzzles!.length - 1); // Default to latest puzzle
+    const puzzleData = puzzles![idx];
 
     if (puzzleData) {
       const finalSolution: Grid = puzzleData.solution.map((row: string) => row.split(''));
       const finalScrambleMoves: {type: 'row' | 'col', idx: number, dir: number}[] = puzzleData.scrambleMoves;
       
-      const pNum = getPuzzleNumber(dateToLoad);
-      setPuzzleNumber(pNum);
-
       const solMoves: Move[] = finalScrambleMoves.map(m => ({
         type: m.type as 'row' | 'col',
         idx: m.idx,
@@ -104,26 +64,8 @@ export default function App() {
       setSolution(finalSolution);
       setInitialGrid(scrambledGrid.map(r => [...r]));
 
-      // 1. Try date-specific key
-      const dateKey = `wordwrap_game_state_${dateToLoad}`;
-      let savedStateStr = localStorage.getItem(dateKey);
-
-      // 2. Fallback to legacy key (migration)
-      if (!savedStateStr) {
-        const legacyStateStr = localStorage.getItem('wordwrap_game_state');
-        if (legacyStateStr) {
-          try {
-            const legacyState: GameState = JSON.parse(legacyStateStr);
-            if (legacyState.levelId === dateToLoad) {
-              savedStateStr = legacyStateStr;
-              // Clean up legacy key
-              localStorage.removeItem('wordwrap_game_state');
-            }
-          } catch (e) {
-            console.error("Error parsing legacy state:", e);
-          }
-        }
-      }
+      const puzzleKey = `wordwrap_game_state_${idx}`;
+      const savedStateStr = localStorage.getItem(puzzleKey);
 
       let loaded = false;
       if (savedStateStr) {
@@ -157,7 +99,7 @@ export default function App() {
         setShowFailureModal(false);
       }
 
-      setLevelId(dateToLoad);
+      setLevelId(idx);
     } else {
       setGrid(Array(4).fill(null).map(() => Array(4).fill(' ')));
       setSolution(null);
@@ -165,60 +107,24 @@ export default function App() {
     }
 
     setIsLoading(false);
-  }, []);
+  }, [allPuzzles]);
 
   useEffect(() => {
-    startNewGame();
-
-    const handlePopState = () => {
+    // Basic route parsing (e.g., /1 or /2)
+    const path = window.location.pathname.replace(/^\/|\/$/g, '');
+    const num = parseInt(path);
+    if (!isNaN(num) && num > 0) {
+      startNewGame(num - 1);
+    } else {
       startNewGame();
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    }
   }, [startNewGame]);
 
   useEffect(() => {
-    if (puzzleNumber > 0 && levelId) {
-      const dateLabel = formatDate(levelId as string);
-      const isArchive = window.location.pathname.replace(/^\/|\/$/g, '') === 'archive';
-      const title = isArchive
-        ? "Archive — WordWrap Daily Word Grid Puzzle Game"
-        : `WordWrap #${puzzleNumber} (${dateLabel}) — Daily Word Grid Puzzle Game | casualga.me`;
-      document.title = title;
-
-      const url = isArchive
-        ? `${window.location.origin}/archive`
-        : `${window.location.origin}/${levelId}`;
-
-      // Update meta tags dynamically
-      const updateMeta = (selector: string, attr: string, value: string) => {
-        const el = document.querySelector(selector);
-        if (el) el.setAttribute(attr, value);
-      };
-
-      updateMeta('link[rel="canonical"]', 'href', url);
-
-      const description = isArchive
-        ? "Browse the full history of WordWrap daily puzzles. Play any puzzle from our archive!"
-        : "Shift rows and columns to spell 4 words across and 4 words down. A new challenge every day.";
-
-      updateMeta('meta[name="description"]', 'content', description);
-      updateMeta('meta[property="og:url"]', 'content', url);
-      updateMeta('meta[property="og:title"]', 'content', title);
-      updateMeta('meta[property="og:description"]', 'content', description);
-      updateMeta('meta[property="og:image"]', 'content', `${window.location.origin}/og/${levelId}.png`);
-      updateMeta('meta[name="twitter:url"]', 'content', url);
-      updateMeta('meta[name="twitter:title"]', 'content', title);
-      updateMeta('meta[name="twitter:description"]', 'content', description);
-      updateMeta('meta[name="twitter:image"]', 'content', `${window.location.origin}/og/${levelId}.png`);
-    }
-  }, [puzzleNumber, levelId]);
-
-  useEffect(() => {
-    if (levelId === 0 || isLoading) return;
+    if (levelId === null || isLoading) return;
 
     const state: GameState = {
-      levelId: levelId as string,
+      levelId: levelId as number,
       grid,
       attempts,
       currentAttemptMoves,
