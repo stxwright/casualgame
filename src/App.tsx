@@ -11,6 +11,7 @@ export default function App() {
   const [isSolved, setIsSolved] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showFailureModal, setShowFailureModal] = useState(false);
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [lastMoveType, setLastMoveType] = useState<MoveType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -110,8 +111,10 @@ export default function App() {
   }, [allPuzzles]);
 
   useEffect(() => {
-    // Basic route parsing (e.g., /1 or /2)
-    const path = window.location.pathname.replace(/^\/|\/$/g, '');
+    // Basic route parsing (e.g., /casualgame/1 or /casualgame/2)
+    // Remove the base path to get the actual route
+    const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+    const path = window.location.pathname.replace(base, '').replace(/^\/|\/$/g, '');
     const num = parseInt(path);
     if (!isNaN(num) && num > 0) {
       startNewGame(num - 1);
