@@ -1,16 +1,36 @@
-# React + Vite
+# WordWrap
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+WordWrap is a minimalist, grid-based word puzzle game. The goal is to shift rows and columns to arrange letters into four words across and four words down.
 
-Currently, two official plugins are available:
+## How to Play
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Objective:** Form a valid 4x4 grid of words (4 across, 4 down).
+- **Controls:** Click the arrows around the board to shift a row or column by one tile.
+- **Constraints:**
+  - Each attempt gives you **2 moves**.
+  - You have **6 attempts** per puzzle.
+  - You cannot shift the same axis (row or column) twice in a row.
+- **Feedback:**
+  - **Green:** The move is part of the solution.
+  - **Yellow:** The correct row/column was shifted, but in the wrong direction.
+  - **Red:** This row/column does not need shifting.
 
-## React Compiler
+## Development
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+This project is a React SPA built with Vite and Tailwind CSS, designed specifically for lightweight hosting on GitHub Pages.
 
-## Expanding the ESLint configuration
+### Local Setup
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1.  Clone the repository.
+2.  Install dependencies: `npm install`
+3.  Start the dev server: `npm run dev`
+
+### Project Structure
+
+- `src/App.tsx`: Main game logic and UI.
+- `public/puzzles.json`: The puzzle database.
+- `vite.config.js`: Optimized for GitHub Pages sub-path hosting and hash-routing.
+
+## Credits
+
+Created with ❤️ for word game enthusiasts. Hosted for free on GitHub Pages.
