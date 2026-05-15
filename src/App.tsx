@@ -116,14 +116,13 @@ export default function App() {
       }
     }
 
-    // Clamp to valid range so out-of-bounds URLs (e.g. /99999) redirect to
+    // Clamp to valid range so out-of-bounds URLs (e.g. /#/99999) redirect to
     // the nearest real puzzle rather than showing a blank board.
     const requestedIdx = targetIdx ?? 0;
     const idx = Math.max(0, Math.min(requestedIdx, puzzles.length - 1));
 
     if (idx !== requestedIdx) {
-      const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-      window.history.replaceState({}, '', `${base}/${idx + 1}`);
+      window.history.replaceState({}, '', `#/${idx + 1}`);
     }
 
     const puzzleData = puzzles[idx];
@@ -190,12 +189,11 @@ export default function App() {
   }, []); // stable — reads puzzles from ref, not state
 
   // -------------------------------------------------------------------------
-  // Initial route parsing: /1, /2, /42, etc.
+  // Initial route parsing: #/1, #/2, #/42, etc.
   // -------------------------------------------------------------------------
   useEffect(() => {
-    const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-    const path = window.location.pathname.replace(base, '').replace(/^\/|\/$/g, '');
-    const num = parseInt(path, 10);
+    const hash = window.location.hash.replace(/^#\//, '');
+    const num = parseInt(hash, 10);
     startNewGame(!isNaN(num) && num > 0 ? num - 1 : 0);
   }, [startNewGame]);
 
@@ -298,8 +296,7 @@ export default function App() {
   // Navigation
   // -------------------------------------------------------------------------
   const navigateToPuzzle = useCallback((idx: number) => {
-    const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-    window.history.pushState({}, '', `${base}/${idx + 1}`);
+    window.history.pushState({}, '', `#/${idx + 1}`);
     startNewGame(idx);
   }, [startNewGame]);
 

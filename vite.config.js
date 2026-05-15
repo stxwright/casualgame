@@ -12,18 +12,6 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    {
-      name: 'copy-404',
-      closeBundle() {
-        const distPath = path.resolve(__dirname, 'dist');
-        const indexPath = path.resolve(distPath, 'index.html');
-        const fourOhFourPath = path.resolve(distPath, '404.html');
-        if (fs.existsSync(indexPath)) {
-          fs.copyFileSync(indexPath, fourOhFourPath);
-          console.log('Copied index.html to 404.html for GitHub Pages SPA support');
-        }
-      }
-    }
   ],
   // Must match the GitHub Pages repo sub-path.
   // For local dev, Vite respects this too so all asset/puzzle URLs stay consistent.
