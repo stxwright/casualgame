@@ -10,7 +10,7 @@ export default function App() {
   const [movesRemaining, setMovesRemaining] = useState(2);
   const [isSolved, setIsSolved] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [showFailureModal, setShowFailureModal] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [lastMoveType, setLastMoveType] = useState<MoveType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -22,6 +22,9 @@ export default function App() {
   const [showCopied, setShowCopied] = useState(false);
 
   const [allPuzzles, setAllPuzzles] = useState<any[] | null>(null);
+
+  // puzzleNumber is 1-based for display; levelId is 0-based index
+  const puzzleNumber = levelId !== null ? levelId + 1 : 0;
 
   const startNewGame = useCallback(async (targetIdx?: number) => {
     setIsLoading(true);
@@ -39,7 +42,8 @@ export default function App() {
       }
     }
 
-    const idx = targetIdx ?? (puzzles!.length - 1); // Default to latest puzzle
+    // Default to puzzle 1 (index 0) rather than the latest
+    const idx = targetIdx ?? 0;
     const puzzleData = puzzles![idx];
 
     if (puzzleData) {
@@ -72,17 +76,23 @@ export default function App() {
       if (savedStateStr) {
         try {
           const savedState: GameState = JSON.parse(savedStateStr);
-          setGrid(savedState.grid);
-          setAttempts(savedState.attempts);
-          setCurrentAttemptMoves(savedState.currentAttemptMoves);
-          setCurrentAttemptFeedback(savedState.currentAttemptFeedback);
-          setMovesRemaining(savedState.movesRemaining);
-          setIsSolved(savedState.isSolved);
-          setLastMoveType(savedState.lastMoveType);
-          loaded = true;
-          
-          setShowModal(savedState.isSolved);
-          setShowFailureModal(!savedState.isSolved && savedState.attempts.length >= 6);
+
+          // If previously failed (ran out of attempts without solving), treat as a fresh
+          // start so the player can try again — don't restore a locked-out state
+          const wasFailed = !savedState.isSolved && savedState.attempts.length >= 6;
+
+          if (!wasFailed) {
+            setGrid(savedState.grid);
+            setAttempts(savedState.attempts);
+            setCurrentAttemptMoves(savedState.currentAttemptMoves);
+            setCurrentAttemptFeedback(savedState.currentAttemptFeedback);
+            setMovesRemaining(savedState.movesRemaining);
+            setIsSolved(savedState.isSolved);
+            setLastMoveType(savedState.lastMoveType);
+            loaded = true;
+
+            setShowModal(savedState.isSolved);
+          }
         } catch (e) {
           console.error("Error parsing saved state:", e);
         }
@@ -97,7 +107,6 @@ export default function App() {
         setCurrentAttemptMoves([]);
         setCurrentAttemptFeedback([]);
         setShowModal(false);
-        setShowFailureModal(false);
       }
 
       setLevelId(idx);
@@ -111,15 +120,14 @@ export default function App() {
   }, [allPuzzles]);
 
   useEffect(() => {
-    // Basic route parsing (e.g., /casualgame/1 or /casualgame/2)
-    // Remove the base path to get the actual route
+    // Route parsing: /1, /2, /42, etc.
     const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     const path = window.location.pathname.replace(base, '').replace(/^\/|\/$/g, '');
     const num = parseInt(path);
     if (!isNaN(num) && num > 0) {
       startNewGame(num - 1);
     } else {
-      startNewGame();
+      startNewGame(0);
     }
   }, [startNewGame]);
 
@@ -127,7 +135,7 @@ export default function App() {
     if (levelId === null || isLoading) return;
 
     const state: GameState = {
-      levelId: levelId as number,
+      levelId,
       grid,
       attempts,
       currentAttemptMoves,
@@ -170,7 +178,7 @@ export default function App() {
   };
 
   const handleMove = (type: MoveType, idx: number, dir: number) => {
-    if (isSolved || attempts.length >= 6 || movesRemaining <= 0 || lastMoveType === type) return;
+    if (isSolved || movesRemaining <= 0 || lastMoveType === type) return;
     
     const move: Move = { type, idx, dir };
     const newGrid = type === 'row' 
@@ -195,16 +203,24 @@ export default function App() {
     if (won) {
       setIsSolved(true);
       setAttempts(prev => [...prev, { moves: newAttemptMoves, feedback: newAttemptFeedback }]);
-      logEvent(analytics, 'level_end', { level_name: levelId as string, success: true, attempts: attempts.length + 1 });
       setTimeout(() => setShowModal(true), 2000);
     } else if (newMovesRemaining === 0) {
       const finishedAttempt = { moves: newAttemptMoves, feedback: newAttemptFeedback };
-      
-      if (attempts.length >= 5) {
-        setAttempts(prev => [...prev, finishedAttempt]);
-        if (solution) setGrid(solution);
-        logEvent(analytics, 'level_end', { level_name: levelId as string, success: false, attempts: 6 });
-        setTimeout(() => setShowFailureModal(true), 2000);
+      const newAttempts = [...attempts, finishedAttempt];
+
+      if (newAttempts.length >= 6) {
+        // All attempts used — reset so the player can try again.
+        // Do NOT reveal the solution.
+        setTimeout(() => {
+          if (initialGrid) {
+            setGrid(initialGrid.map(r => [...r]));
+            setMovesRemaining(2);
+            setLastMoveType(null);
+            setAttempts([]);
+            setCurrentAttemptMoves([]);
+            setCurrentAttemptFeedback([]);
+          }
+        }, 1200);
       } else {
         setTimeout(() => {
           if (initialGrid) {
@@ -213,7 +229,7 @@ export default function App() {
             setLastMoveType(null);
             setCurrentAttemptMoves([]);
             setCurrentAttemptFeedback([]);
-            setAttempts(prev => [...prev, finishedAttempt]);
+            setAttempts(newAttempts);
           }
         }, 1200);
       }
@@ -221,11 +237,6 @@ export default function App() {
   };
 
   const shareResult = () => {
-    logEvent(analytics, 'share', {
-      method: navigator.share ? 'web_share' : 'clipboard',
-      content_type: 'puzzle_result',
-      item_id: levelId as string
-    });
     const feedbackToEmoji = (f: Feedback) => {
       if (f === 'correct') return '🟩';
       if (f === 'partial') return '🟨';
@@ -237,17 +248,15 @@ export default function App() {
     if (isSolved) {
       if (attemptCount === 1) badge = ' ⚡';
       else if (attemptCount <= 3) badge = ' 🎯';
-    } else {
-      badge = ' 😅';
     }
 
-    const header = `Wordwrap #${puzzleNumber}\n${isSolved ? `Solved in ${attemptCount} attempt${attemptCount > 1 ? 's' : ''}!${badge}` : `Better luck tomorrow${badge}`}`;
+    const header = `Wordwrap #${puzzleNumber}\nSolved in ${attemptCount} attempt${attemptCount > 1 ? 's' : ''}!${badge}`;
     
     const gridEmojis = attempts.map(a => 
       a.feedback.map(feedbackToEmoji).join('')
     ).join('\n');
 
-    const url = `${window.location.origin}/${levelId}`;
+    const url = `${window.location.origin}${import.meta.env.BASE_URL}${puzzleNumber}`;
     const shareText = `${header}\n\n${gridEmojis}\n`;
 
     if (navigator.share) {
@@ -270,49 +279,37 @@ export default function App() {
     setTimeout(() => setShowCopied(false), 2000);
   };
 
+  // List all puzzles by index for the archive/browse modal
   const archivePuzzles = useMemo(() => {
-    if (!showArchiveModal) return [];
+    if (!showArchiveModal || !allPuzzles) return [];
 
-    const puzzles = [];
-    const now = new Date();
-    const offset = now.getTimezoneOffset();
-    const localDate = new Date(now.getTime() - (offset * 60 * 1000));
-    const todayStr = localDate.toISOString().slice(0, 10);
-
-    const start = new Date(LAUNCH_DATE);
-    const end = new Date(todayStr + 'T00:00:00Z');
-
-    let current = new Date(end);
-    while (current >= start) {
-      const dateStr = current.toISOString().slice(0, 10);
-      const pNum = getPuzzleNumber(current);
-
-      const savedStateStr = localStorage.getItem(`wordwrap_game_state_${dateStr}`);
-      let isSolvedForDate = false;
+    return allPuzzles.map((_, idx) => {
+      const savedStateStr = localStorage.getItem(`wordwrap_game_state_${idx}`);
+      let isSolvedForPuzzle = false;
       if (savedStateStr) {
         try {
-          isSolvedForDate = JSON.parse(savedStateStr).isSolved;
+          isSolvedForPuzzle = JSON.parse(savedStateStr).isSolved;
         } catch (e) {}
       }
-
-      puzzles.push({ date: dateStr, number: pNum, isSolved: isSolvedForDate });
-      current.setDate(current.getDate() - 1);
-    }
-    return puzzles;
-  }, [showArchiveModal, levelId, isSolved]);
+      return { index: idx, number: idx + 1, isSolved: isSolvedForPuzzle };
+    });
+  }, [showArchiveModal, levelId, isSolved, allPuzzles]);
 
   const ICON_SIZE = 'calc(var(--s) * 0.45)';
   const MODAL_ICON_SIZE = 'calc(var(--s) * 1.1)';
   const MODAL_TITLE_SIZE = 'calc(var(--s) * 0.7)';
   const MODAL_SUBTITLE_SIZE = 'calc(var(--s) * 0.3)';
   const MODAL_GRID_SIZE = 'calc(var(--s) * 0.5)';
-  const canShowModal = (isSolved && showModal) || (!isSolved && showFailureModal);
 
-  const navigateToPuzzle = (date?: string) => {
-    const path = date ? `/${date}` : '/';
-    window.history.pushState({}, '', path);
-    startNewGame(date);
+  const navigateToPuzzle = (idx?: number) => {
+    const target = idx ?? 0;
+    const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+    window.history.pushState({}, '', `${base}/${target + 1}`);
+    startNewGame(target);
   };
+
+  const hasNextPuzzle = allPuzzles !== null && levelId !== null && levelId < allPuzzles.length - 1;
+  const hasPrevPuzzle = levelId !== null && levelId > 0;
 
   return (
     <main className="relative flex h-screen w-screen flex-col items-center justify-center bg-slate-900 p-4 select-none overflow-hidden">
@@ -349,7 +346,7 @@ export default function App() {
               <div key={i} className="flex justify-center">
                 <button
                   onClick={() => handleMove('col', i, -1)}
-                  disabled={lastMoveType==='col' || movesRemaining===0 || isSolved || attempts.length >= 6}
+                  disabled={lastMoveType==='col' || movesRemaining===0 || isSolved}
                   aria-label={`Shift column ${i + 1} up`}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginTop: 'calc(var(--btn-size) * -0.5)' }}
                   className="flex items-center justify-center rounded-full bg-slate-600 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
@@ -367,7 +364,7 @@ export default function App() {
               <div key={i} className="flex items-center">
                 <button
                   onClick={() => handleMove('row', i, -1)}
-                  disabled={lastMoveType==='row' || movesRemaining===0 || isSolved || attempts.length >= 6}
+                  disabled={lastMoveType==='row' || movesRemaining===0 || isSolved}
                   aria-label={`Shift row ${i + 1} left`}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginLeft: 'calc(var(--btn-size) * -0.5)' }}
                   className="flex items-center justify-center rounded-full bg-slate-600 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
@@ -400,7 +397,7 @@ export default function App() {
               <div key={i} className="flex items-center">
                 <button
                   onClick={() => handleMove('row', i, 1)}
-                  disabled={lastMoveType==='row' || movesRemaining===0 || isSolved || attempts.length >= 6}
+                  disabled={lastMoveType==='row' || movesRemaining===0 || isSolved}
                   aria-label={`Shift row ${i + 1} right`}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginLeft: 'calc(var(--btn-size) * -0.5)' }}
                   className="flex items-center justify-center rounded-full bg-slate-600 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
@@ -418,7 +415,7 @@ export default function App() {
               <div key={i} className="flex justify-center">
                 <button
                   onClick={() => handleMove('col', i, 1)}
-                  disabled={lastMoveType==='col' || movesRemaining===0 || isSolved || attempts.length >= 6}
+                  disabled={lastMoveType==='col' || movesRemaining===0 || isSolved}
                   aria-label={`Shift column ${i + 1} down`}
                   style={{ width: 'var(--btn-size)', height: 'var(--btn-size)', marginTop: 'calc(var(--btn-size) * -0.5)' }}
                   className="flex items-center justify-center rounded-full bg-slate-600 text-white shadow-xl hover:bg-blue-600 hover:text-white disabled:opacity-10 transition-colors">
@@ -436,14 +433,14 @@ export default function App() {
           <button
             onClick={() => setShowArchiveModal(true)}
             className="flex items-center justify-center p-2 rounded-xl bg-slate-800/50 border border-slate-700/50 text-slate-400 hover:text-white transition-all shadow-inner hover:scale-105 active:scale-95"
-            aria-label="Archive"
+            aria-label="Browse puzzles"
           >
             <History size={32} style={{ width: ICON_SIZE, height: ICON_SIZE }} />
           </button>
 
-          {(isSolved || attempts.length >= 6) ? (
+          {isSolved ? (
             <button
-              onClick={() => isSolved ? setShowModal(true) : setShowFailureModal(true)}
+              onClick={() => setShowModal(true)}
               style={{ fontSize: 'calc(var(--s)*0.5)' }}
               className="font-black text-cyan-400 underline decoration-4 underline-offset-8"
             >
@@ -487,58 +484,60 @@ export default function App() {
           </button>
         </div>
 
-        <div style={{ fontSize: 'calc(var(--s)*0.25)' }} className="mt-4 font-mono text-slate-400 font-bold tracking-widest uppercase">
-          Puzzle #{puzzleNumber}
+        {/* Puzzle number + prev/next navigation */}
+        <div className="mt-4 flex items-center gap-4">
+          <button
+            onClick={() => levelId !== null && navigateToPuzzle(levelId - 1)}
+            disabled={!hasPrevPuzzle}
+            aria-label="Previous puzzle"
+            className="text-slate-400 hover:text-white disabled:opacity-20 transition-colors"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <div style={{ fontSize: 'calc(var(--s)*0.25)' }} className="font-mono text-slate-400 font-bold tracking-widest uppercase">
+            Puzzle #{puzzleNumber}
+          </div>
+          <button
+            onClick={() => levelId !== null && navigateToPuzzle(levelId + 1)}
+            disabled={!hasNextPuzzle}
+            aria-label="Next puzzle"
+            className="text-slate-400 hover:text-white disabled:opacity-20 transition-colors"
+          >
+            <ChevronRight size={20} />
+          </button>
         </div>
       </footer>
 
       {/* MODALS */}
 
-      {/* ARCHIVE MODAL */}
+      {/* BROWSE / ARCHIVE MODAL */}
       {showArchiveModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/95 backdrop-blur-sm animate-in fade-in duration-300">
           <button
-            onClick={() => {
-              setShowArchiveModal(false);
-              if (window.location.pathname.includes('archive')) {
-                window.history.pushState({}, '', '/');
-              }
-            }}
+            onClick={() => setShowArchiveModal(false)}
             aria-label="Close"
             className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-[110]"
           >
             <X style={{ width: ICON_SIZE, height: ICON_SIZE }} />
           </button>
           <div className="flex flex-col h-full w-full max-w-lg p-6" style={{ minWidth: 'min(90vw, calc(var(--s) * 5))' }}>
-            <h2 style={{ fontSize: MODAL_TITLE_SIZE }} className="font-black mb-4 text-white uppercase text-center shrink-0 leading-tight">Archive</h2>
+            <h2 style={{ fontSize: MODAL_TITLE_SIZE }} className="font-black mb-4 text-white uppercase text-center shrink-0 leading-tight">Puzzles</h2>
 
             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-2 pb-6">
-              <button
-                onClick={() => {
-                  navigateToPuzzle();
-                  setShowArchiveModal(false);
-                }}
-                className="w-full flex items-center justify-between p-4 rounded-xl bg-blue-600/20 border border-blue-500/30 hover:bg-blue-600/30 transition-all text-blue-400 font-bold mb-4"
-              >
-                <span>Back to Today</span>
-                <ChevronRight size={20} />
-              </button>
-
               {archivePuzzles.map((p) => (
                 <button
-                  key={p.date}
+                  key={p.number}
                   onClick={() => {
-                    navigateToPuzzle(p.date);
+                    navigateToPuzzle(p.index);
                     setShowArchiveModal(false);
                   }}
                   className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all
-                    ${levelId === p.date
+                    ${levelId === p.index
                       ? 'bg-slate-700 border-blue-500'
                       : 'bg-slate-800/50 border-slate-700 hover:border-slate-500'}`}
                 >
                   <div className="flex flex-col items-start">
                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Puzzle #{p.number}</span>
-                    <span className="text-white font-bold">{formatDate(p.date)}</span>
                   </div>
                   {p.isSolved && (
                     <div className="bg-green-500/20 p-1.5 rounded-full">
@@ -571,7 +570,7 @@ export default function App() {
 
               <div>
                 <h3 className="text-blue-400 font-bold uppercase text-xs mb-1">Attempts</h3>
-                <p>Each attempt consists of <span className="text-white font-bold">2 moves</span>. You have <span className="text-white font-bold">6 attempts</span> total. If the puzzle isn't solved after 2 moves, the grid resets for your next attempt.</p>
+                <p>Each attempt consists of <span className="text-white font-bold">2 moves</span>. You have <span className="text-white font-bold">6 attempts</span> per round. If you use all 6 without solving, the puzzle resets so you can try again.</p>
               </div>
 
               <div>
@@ -603,65 +602,22 @@ export default function App() {
         </div>
       )}
 
-      {/* FUTURE PUZZLE MODAL */}
-      {showFutureModal && (
+      {/* WIN MODAL */}
+      {isSolved && showModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/95 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="text-center p-8 w-full max-w-lg overflow-y-auto max-h-full custom-scrollbar" style={{ minWidth: 'min(90vw, calc(var(--s) * 5))' }}>
-            <h2 style={{ fontSize: MODAL_TITLE_SIZE }} className="font-black mb-4 text-white uppercase leading-tight">Coming Soon!</h2>
-            <p className="text-slate-300 mb-8">This puzzle hasn't been published yet. Check back on that date!</p>
-            <button
-              onClick={() => navigateToPuzzle()}
-              className="w-full rounded-xl bg-blue-600 py-3 text-lg font-bold hover:bg-blue-500 shadow-xl text-white transition-all active:scale-95"
-            >
-              PLAY TODAY'S PUZZLE
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* PRE-ARCHIVE MODAL */}
-      {showPreArchiveModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/95 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="text-center p-8 w-full max-w-lg overflow-y-auto max-h-full custom-scrollbar" style={{ minWidth: 'min(90vw, calc(var(--s) * 5))' }}>
-            <h2 style={{ fontSize: MODAL_TITLE_SIZE }} className="font-black mb-4 text-white uppercase leading-tight">Way Back!</h2>
-            <p className="text-slate-300 mb-8">This date predates our puzzle archive. Check out some of our past puzzles!</p>
-            <button
-              onClick={() => {
-                setShowPreArchiveModal(false);
-                setShowArchiveModal(true);
-              }}
-              className="w-full rounded-xl bg-blue-600 py-3 text-lg font-bold hover:bg-blue-500 shadow-xl text-white transition-all active:scale-95"
-            >
-              GO TO ARCHIVE
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* WIN/LOSE MODAL */}
-      {canShowModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/95 backdrop-blur-sm animate-in fade-in duration-300">
-          <button onClick={() => { setShowModal(false); setShowFailureModal(false); }} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-[110]">
+          <button onClick={() => setShowModal(false)} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-[110]">
             <X style={{ width: ICON_SIZE, height: ICON_SIZE }} />
           </button>
           <div className="text-center p-8 w-full max-w-lg overflow-y-auto max-h-full custom-scrollbar" style={{ minWidth: 'min(90vw, calc(var(--s) * 5))' }}>
             <div className="flex flex-col items-center">
-              {isSolved ? (
-                <Trophy className="mb-4 text-green-500 animate-bounce" style={{ width: MODAL_ICON_SIZE, height: MODAL_ICON_SIZE }} />
-              ) : (
-                <div className="mb-4 text-red-500 flex items-center justify-center" style={{ width: MODAL_ICON_SIZE, height: MODAL_ICON_SIZE }}>
-                  <X style={{ width: '100%', height: '100%' }} strokeWidth={3} />
-                </div>
-              )}
+              <Trophy className="mb-4 text-green-500 animate-bounce" style={{ width: MODAL_ICON_SIZE, height: MODAL_ICON_SIZE }} />
               
               <h2 style={{ fontSize: MODAL_TITLE_SIZE }} className="font-black mb-2 text-white uppercase leading-tight">
-                {isSolved ? 'SOLVED!' : 'GAME OVER'}
+                SOLVED!
               </h2>
               
               <p style={{ fontSize: MODAL_SUBTITLE_SIZE }} className="text-slate-400 mb-6 font-bold">
-                {isSolved 
-                  ? `In ${attempts.length} ${attempts.length === 1 ? 'attempt' : 'attempts'}`
-                  : 'All attempts used'}
+                In {attempts.length} {attempts.length === 1 ? 'attempt' : 'attempts'}
               </p>
               
               <div className="flex flex-col gap-1 mb-8 items-center">
@@ -677,13 +633,25 @@ export default function App() {
               <button 
                 onClick={shareResult} 
                 style={{ padding: 'calc(var(--s) * 0.3) 0', fontSize: 'calc(var(--s) * 0.4)' }}
-                className={`flex items-center justify-center gap-2 w-full rounded-xl font-bold shadow-xl text-white transition-all active:scale-95 ${
-                  isSolved ? 'bg-blue-600 hover:bg-blue-500' : 'bg-slate-700 hover:bg-slate-600'
-                }`}
+                className="flex items-center justify-center gap-2 w-full rounded-xl font-bold shadow-xl text-white bg-blue-600 hover:bg-blue-500 transition-all active:scale-95 mb-3"
               >
                 <Share2 size={24} style={{ width: 'calc(var(--s) * 0.4)', height: 'calc(var(--s) * 0.4)' }} />
                 {showCopied ? 'COPIED!' : 'SHARE RESULT'}
               </button>
+
+              {hasNextPuzzle && (
+                <button
+                  onClick={() => {
+                    setShowModal(false);
+                    if (levelId !== null) navigateToPuzzle(levelId + 1);
+                  }}
+                  style={{ padding: 'calc(var(--s) * 0.3) 0', fontSize: 'calc(var(--s) * 0.4)' }}
+                  className="flex items-center justify-center gap-2 w-full rounded-xl font-bold shadow-xl text-white bg-slate-700 hover:bg-slate-600 transition-all active:scale-95"
+                >
+                  NEXT PUZZLE
+                  <ChevronRight size={24} style={{ width: 'calc(var(--s) * 0.4)', height: 'calc(var(--s) * 0.4)' }} />
+                </button>
+              )}
             </div>
           </div>
         </div>

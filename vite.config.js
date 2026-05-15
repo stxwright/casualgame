@@ -4,25 +4,18 @@ import tailwindcss from '@tailwindcss/vite'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { LAUNCH_DATE, getPuzzleNumber, formatDate } from './src/dateUtils'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// SEO constants
-const SITE_URL = process.env.VITE_SITE_URL || 'https://casualga.me/';
+const SITE_URL = process.env.VITE_SITE_URL || 'https://stxwright.github.io/casualgame/';
 
 function seoPlugin() {
   return {
     name: 'seo-plugin',
     transformIndexHtml(html) {
-      const now = new Date();
-      const dateStr = now.toISOString().slice(0, 10);
-      const puzzleNumber = getPuzzleNumber(dateStr);
-      const dateLabel = formatDate(dateStr);
-
-      const title = `WordWrap #${puzzleNumber} (${dateLabel}) — Daily Word Grid Puzzle Game | casualga.me`;
-      const description = "Shift rows and columns to arrange letters into four words across and four words down in this daily word puzzle. Challenge yourself with a new Wordwrap grid every day!";
+      const title = `WordWrap — Word Grid Puzzle Game`;
+      const description = "Shift rows and columns to arrange letters into four words across and four words down. Work through puzzles at your own pace — solve each one before moving on!";
 
       const structuredData = {
         "@context": "https://schema.org",
@@ -55,7 +48,11 @@ function seoPlugin() {
           },
           {
             "@type": "HowToStep",
-            "text": "Each attempt consists of 2 moves. You have 6 attempts total."
+            "text": "Each attempt consists of 2 moves. You have 6 attempts per round."
+          },
+          {
+            "@type": "HowToStep",
+            "text": "If you use all 6 attempts without solving, the puzzle resets so you can keep trying."
           },
           {
             "@type": "HowToStep",
@@ -74,14 +71,14 @@ function seoPlugin() {
     <meta property="og:url" content="${SITE_URL}" />
     <meta property="og:title" content="${title}" />
     <meta property="og:description" content="${description}" />
-    <meta property="og:image" content="${SITE_URL}og/${dateStr}.png" />
+    <meta property="og:image" content="${SITE_URL}og/preview.png" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="${SITE_URL}" />
     <meta name="twitter:title" content="${title}" />
     <meta name="twitter:description" content="${description}" />
-    <meta name="twitter:image" content="${SITE_URL}og/${dateStr}.png" />
+    <meta name="twitter:image" content="${SITE_URL}og/preview.png" />
 
     <script type="application/ld+json">${JSON.stringify(structuredData)}</script>
     <script type="application/ld+json">${JSON.stringify(howToData)}</script>
@@ -89,14 +86,13 @@ function seoPlugin() {
 
       const staticShell = `
       <div id="seo-content" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;">
-        <h1>WordWrap #${puzzleNumber}</h1>
-        <p>Today is ${formatDate(dateStr, { month: 'long' })}.</p>
+        <h1>WordWrap — Word Grid Puzzle Game</h1>
         <p>${description}</p>
         <h2>How to Play</h2>
         <ul>
           <li>Shift rows and columns to arrange letters into 4 words across and 4 words down.</li>
-          <li>Each attempt consists of 2 moves. You have 6 attempts total.</li>
-          <li>If the puzzle isn't solved after 2 moves, the grid resets for your next attempt.</li>
+          <li>Each attempt consists of 2 moves. You have 6 attempts per round.</li>
+          <li>If you use all 6 attempts without solving, the puzzle resets so you can keep trying.</li>
         </ul>
         <h3>Move Feedback</h3>
         <ul>
@@ -107,7 +103,6 @@ function seoPlugin() {
       </div>
 `;
 
-      // Replace existing title and description if any, otherwise prepend to head
       let newHtml = html
         .replace(/<title>.*?<\/title>/, '')
         .replace(/<meta name="description" content=".*?" \/>/, '')
@@ -119,8 +114,7 @@ function seoPlugin() {
     closeBundle() {
       const sitemapPath = path.resolve(__dirname, 'dist/sitemap.xml');
       if (fs.existsSync(sitemapPath)) {
-        const now = new Date();
-        const dateStr = now.toISOString().slice(0, 10);
+        const dateStr = new Date().toISOString().slice(0, 10);
         let sitemap = fs.readFileSync(sitemapPath, 'utf-8');
         sitemap = sitemap.replace(/<lastmod>.*?<\/lastmod>/g, `<lastmod>${dateStr}</lastmod>`);
         fs.writeFileSync(sitemapPath, sitemap);
@@ -130,13 +124,14 @@ function seoPlugin() {
   };
 }
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
     seoPlugin()
   ],
+  // Must match the GitHub Pages repo sub-path.
+  // For local dev, Vite respects this too so all asset/puzzle URLs stay consistent.
   base: '/casualgame/',
   server: {
     host: true
