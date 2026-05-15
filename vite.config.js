@@ -15,7 +15,7 @@ export default defineConfig({
   ],
   // Must match the GitHub Pages repo sub-path.
   // For local dev, Vite respects this too so all asset/puzzle URLs stay consistent.
-  base: '/casualgame/',
+  base: '/wordwrap/',
   server: {
     host: true
   }
